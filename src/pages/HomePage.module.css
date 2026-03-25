@@ -1,0 +1,108 @@
+.page {
+  min-height: 100vh;
+  padding: 1.3rem;
+  display: grid;
+  align-items: center;
+  gap: 1rem;
+}
+
+.hero {
+  width: min(72rem, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 1rem;
+}
+
+.heroPanel {
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1.4rem, 5vw, 2.5rem);
+  border-radius: 2rem;
+  background:
+    radial-gradient(circle at top left, rgba(255, 209, 173, 0.35), transparent 40%),
+    radial-gradient(circle at bottom right, rgba(215, 227, 201, 0.5), transparent 45%),
+    rgba(255, 248, 241, 0.92);
+  border: 1px solid rgba(161, 126, 92, 0.14);
+  box-shadow: 0 24px 48px rgba(101, 74, 55, 0.12);
+}
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  color: var(--color-text-soft);
+  letter-spacing: 0.08em;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(3rem, 8vw, 5rem);
+  line-height: 0.95;
+}
+
+.copy {
+  max-width: 40rem;
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--color-text-muted);
+}
+
+.primaryButton {
+  justify-self: start;
+  min-height: 3.15rem;
+  border: none;
+  border-radius: 999px;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
+  color: white;
+  font: inherit;
+  cursor: pointer;
+  box-shadow: 0 14px 26px rgba(176, 119, 71, 0.24);
+}
+
+.configNotice {
+  margin: 0;
+  color: var(--color-danger);
+}
+
+.stack {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.glassCard {
+  padding: 1rem 1.1rem;
+  border-radius: 1.25rem;
+  background: rgba(255, 249, 243, 0.76);
+  border: 1px solid rgba(161, 126, 92, 0.14);
+  backdrop-filter: blur(16px);
+}
+
+.cardLabel {
+  margin: 0;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-soft);
+}
+
+.cardValue {
+  margin: 0.3rem 0 0;
+  font-size: 1.05rem;
+}
+
+.notice {
+  width: min(72rem, 100%);
+  margin: 0 auto;
+  padding: 1rem 1.1rem;
+  border-radius: 1rem;
+  background: rgba(187, 102, 82, 0.1);
+  color: var(--color-danger);
+  border: 1px solid rgba(187, 102, 82, 0.14);
+}
+
+@media (min-width: 900px) {
+  .hero {
+    grid-template-columns: 1.3fr 0.7fr;
+  }
+}

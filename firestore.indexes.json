@@ -1,0 +1,24 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "analysisRuns",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "rangeStart", "order": "ASCENDING" },
+        { "fieldPath": "rangeEnd", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "analysisRuns",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "rangeStart", "order": "ASCENDING" },
+        { "fieldPath": "rangeEnd", "order": "ASCENDING" },
+        { "fieldPath": "sourceFingerprint", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

@@ -1,0 +1,170 @@
+.card {
+  display: grid;
+  gap: 1rem;
+  padding: 1.15rem;
+  border-radius: 1.3rem;
+  background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,248,241,0.94));
+  border: 1px solid rgba(161, 126, 92, 0.16);
+  box-shadow: var(--shadow-soft);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 1.12rem;
+}
+
+.cardSubtitle {
+  margin: 0.25rem 0 0;
+  color: var(--color-text-soft);
+  font-size: 0.95rem;
+}
+
+.fieldBlock {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.fieldHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.fieldLabel {
+  font-weight: 600;
+}
+
+.fieldHelper {
+  color: var(--color-text-soft);
+  font-size: 0.88rem;
+}
+
+.chipWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.chip,
+.chipSelected,
+.presetButton,
+.presetSelected,
+.presetGhost,
+.scaleButton,
+.scaleSelected {
+  border: none;
+  border-radius: 999px;
+  min-height: 2.7rem;
+  padding: 0.65rem 0.95rem;
+  font: inherit;
+  cursor: pointer;
+  transition: transform 120ms ease, background-color 120ms ease, color 120ms ease;
+}
+
+.chip,
+.presetButton,
+.presetGhost,
+.scaleButton {
+  background: rgba(214, 176, 129, 0.16);
+  color: var(--color-text);
+}
+
+.chipSelected,
+.presetSelected,
+.scaleSelected {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
+  color: white;
+  box-shadow: 0 10px 18px rgba(176, 119, 71, 0.22);
+}
+
+.chip:hover,
+.presetButton:hover,
+.presetGhost:hover,
+.scaleButton:hover,
+.chipSelected:hover,
+.presetSelected:hover,
+.scaleSelected:hover,
+.primaryButton:hover,
+.secondaryButton:hover,
+.ghostButton:hover {
+  transform: translateY(-1px);
+}
+
+.scaleRow,
+.presetRow,
+.inlineGrid,
+.toggleRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.inlineGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.inputLabel {
+  display: grid;
+  gap: 0.45rem;
+  color: var(--color-text);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid rgba(161, 126, 92, 0.18);
+  background: rgba(255, 252, 249, 0.94);
+  padding: 0.8rem 0.9rem;
+  color: var(--color-text);
+  font: inherit;
+}
+
+.textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.primaryButton,
+.secondaryButton,
+.ghostButton {
+  border: none;
+  border-radius: 999px;
+  min-height: 2.85rem;
+  padding: 0.72rem 1.1rem;
+  cursor: pointer;
+  font: inherit;
+}
+
+.primaryButton {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
+  color: white;
+  box-shadow: 0 12px 20px rgba(176, 119, 71, 0.22);
+}
+
+.secondaryButton {
+  background: rgba(214, 176, 129, 0.18);
+  color: var(--color-text);
+}
+
+.ghostButton {
+  background: transparent;
+  color: var(--color-text-soft);
+  border: 1px solid rgba(161, 126, 92, 0.18);
+}
+
+.toggleRow {
+  align-items: center;
+}
+
+.hiddenButton {
+  display: none;
+}

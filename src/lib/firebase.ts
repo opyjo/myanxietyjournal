@@ -1,0 +1,24 @@
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getFunctions } from "firebase/functions";
+
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+};
+
+export const isFirebaseConfigured = Object.values(firebaseConfig).every(Boolean);
+
+export const firebaseApp = initializeApp(
+  firebaseConfig,
+  `anxiety-journal-${firebaseConfig.projectId || "local"}`,
+);
+
+export const auth = isFirebaseConfigured ? getAuth(firebaseApp) : null;
+export const db = isFirebaseConfigured ? getFirestore(firebaseApp) : null;
+export const functions = isFirebaseConfigured ? getFunctions(firebaseApp) : null;
