@@ -18,9 +18,12 @@ export default function AppShell({ children }: PropsWithChildren) {
   return (
     <div className={styles.shell}>
       <header className={styles.header}>
-        <div>
-          <p className={styles.eyebrow}>A calmer view of your patterns</p>
-          <h1 className={styles.title}>{APP_NAME}</h1>
+        <div className={styles.brandGroup}>
+          <div className={styles.brandMark}>AJ</div>
+          <div>
+            <p className={styles.eyebrow}>A calmer view of your patterns</p>
+            <h1 className={styles.title}>{APP_NAME}</h1>
+          </div>
         </div>
         <div className={styles.headerActions}>
           <div className={styles.userBlock}>

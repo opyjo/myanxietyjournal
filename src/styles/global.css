@@ -1,23 +1,28 @@
 :root {
   color-scheme: light;
-  --color-bg: #f7efe7;
-  --color-bg-soft: #fbf6f1;
+  --color-bg: #f3ede4;
+  --color-bg-soft: #fbf7f1;
+  --color-panel: rgba(255, 252, 248, 0.86);
   --color-panel-subtle: rgba(255, 250, 246, 0.94);
-  --color-text: #39291f;
-  --color-text-muted: #655247;
-  --color-text-soft: #8b7061;
-  --color-accent: #cc8750;
-  --color-accent-strong: #b36a3e;
-  --color-success: #4e7f57;
-  --color-danger: #9d503d;
-  --shadow-soft: 0 18px 40px rgba(101, 74, 55, 0.1);
+  --color-line: rgba(134, 111, 95, 0.14);
+  --color-text: #30231b;
+  --color-text-muted: #5a4a40;
+  --color-text-soft: #7a6759;
+  --color-accent: #b97344;
+  --color-accent-strong: #9b5f38;
+  --color-accent-fade: rgba(185, 115, 68, 0.14);
+  --color-success: #517458;
+  --color-danger: #9a5343;
+  --shadow-soft: 0 18px 48px rgba(85, 63, 49, 0.08);
+  --shadow-panel: 0 24px 56px rgba(85, 63, 49, 0.12);
   font-family: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color: var(--color-text);
   background:
-    radial-gradient(circle at top, rgba(252, 210, 174, 0.33), transparent 35%),
-    radial-gradient(circle at bottom right, rgba(212, 227, 197, 0.55), transparent 30%),
+    radial-gradient(circle at top left, rgba(252, 214, 184, 0.42), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(214, 225, 205, 0.5), transparent 28%),
+    linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0)),
     var(--color-bg);
 }
 
@@ -36,6 +41,7 @@ body {
   color: var(--color-text);
   background-color: var(--color-bg);
   background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
 }
 
 button,
@@ -43,6 +49,19 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+button,
+input,
+textarea,
+select,
+a {
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
 }
 
 h1,
@@ -54,6 +73,15 @@ h3 {
 
 a {
   color: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 2px solid rgba(185, 115, 68, 0.35);
+  outline-offset: 3px;
 }
 
 ul {
