@@ -128,8 +128,8 @@ export function mapAnalysisRunDoc(snapshot: QueryDocumentSnapshot<DocumentData>)
       medicationConsistency: Array.isArray(data.analysis?.medicationConsistency)
         ? data.analysis.medicationConsistency.map(String)
         : [],
-      discussionPoints: Array.isArray(data.analysis?.discussionPoints)
-        ? data.analysis.discussionPoints.map(String)
+      reflectionPoints: Array.isArray(data.analysis?.reflectionPoints)
+        ? data.analysis.reflectionPoints.map(String)
         : [],
     },
   };

@@ -15,7 +15,7 @@ import ChipGroup from "../components/ChipGroup";
 import ScaleInput from "../components/ScaleInput";
 import { useAuth } from "../hooks/useAuth";
 import { buildDefaultCheckinForm, buildMedicationSnapshot } from "../lib/checkin";
-import { saveDailyCheckin, watchDailyCheckin, watchMedications } from "../lib/firestore";
+import { callGenerateDailyReflection, saveDailyCheckin, watchDailyCheckin, watchMedications } from "../lib/firestore";
 import styles from "./Page.module.css";
 import ui from "../components/ui.module.css";
 
@@ -28,6 +28,9 @@ export default function TodayPage() {
   const [existingCheckin, setExistingCheckin] = useState<DailyCheckin | null>(null);
   const [customSymptom, setCustomSymptom] = useState("");
   const [saveState, setSaveState] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [reflection, setReflection] = useState<string | null>(null);
+  const [reflectionLoading, setReflectionLoading] = useState(false);
 
   const {
     handleSubmit,
@@ -57,6 +60,35 @@ export default function TodayPage() {
   }, [today, user]);
 
   useEffect(() => {
+    if (!user || !existingCheckin) {
+      return;
+    }
+
+    let cancelled = false;
+    setReflectionLoading(true);
+    callGenerateDailyReflection(today)
+      .then((result) => {
+        if (!cancelled) {
+          setReflection(result.text);
+        }
+      })
+      .catch(() => {
+        // Reflection is a bonus — fail silently
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setReflectionLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  // Only load reflection once when existingCheckin first appears
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existingCheckin?.updatedAt, today, user]);
+
+  useEffect(() => {
     const medicationStatuses = buildMedicationSnapshot(
       medications,
       existingCheckin?.medicationStatuses,
@@ -77,17 +109,39 @@ export default function TodayPage() {
     return list.includes(value) ? list.filter((item) => item !== value) : [...list, value];
   }
 
+  function onValidationError() {
+    setSaveState(null);
+    setSaveError("Some fields need attention. Please check the form and try again.");
+  }
+
   async function onSubmit(values: CheckinFormValues) {
+    setSaveError(null);
+
     if (!user) {
+      setSaveError("You must be signed in to save.");
       return;
     }
 
     setSaveState(null);
-    await saveDailyCheckin(user.uid, {
-      ...values,
-      symptoms: [...new Set(values.symptoms)],
-    });
-    setSaveState("Saved. You can come back and adjust this check-in any time today.");
+    try {
+      await saveDailyCheckin(user.uid, {
+        ...values,
+        symptoms: [...new Set(values.symptoms)],
+      });
+      setSaveState("Saved. You can come back and adjust this check-in any time today.");
+
+      // Generate reflection in background
+      setReflectionLoading(true);
+      callGenerateDailyReflection(today)
+        .then((result) => setReflection(result.text))
+        .catch(() => {})
+        .finally(() => setReflectionLoading(false));
+    } catch (error) {
+      console.error("Save check-in failed:", error);
+      setSaveError(
+        error instanceof Error ? error.message : "Something went wrong saving your check-in. Please try again.",
+      );
+    }
   }
 
   return (
@@ -100,7 +154,7 @@ export default function TodayPage() {
         </p>
       </div>
 
-      <form className={styles.grid} onSubmit={handleSubmit(onSubmit)}>
+      <form className={styles.grid} onSubmit={handleSubmit(onSubmit, onValidationError)}>
         <Card title="How today feels" subtitle="Tap the number that fits best.">
           <ScaleInput
             label="Anxiety level"
@@ -257,6 +311,7 @@ export default function TodayPage() {
             />
           </label>
           {errors.root?.message ? <div className={styles.alert}>{errors.root.message}</div> : null}
+          {saveError ? <div className={styles.alert}>{saveError}</div> : null}
           {saveState ? <div className={styles.success}>{saveState}</div> : null}
           <div className={styles.inlineActions}>
             <button className={ui.primaryButton} type="submit" disabled={isSubmitting}>
@@ -265,6 +320,18 @@ export default function TodayPage() {
           </div>
         </Card>
       </form>
+
+      {(reflectionLoading || reflection) ? (
+        <div className={styles.grid}>
+          <Card title="Your daily reflection" subtitle="A quick thought based on today's check-in.">
+            {reflectionLoading && !reflection ? (
+              <p className={styles.smallNote}>Thinking...</p>
+            ) : (
+              <p>{reflection}</p>
+            )}
+          </Card>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -65,7 +65,7 @@ describe("InsightsPage", () => {
         triggerObservations: ["Trigger"],
         sleepEnergyLinks: ["Sleep"],
         medicationConsistency: ["Consistency"],
-        discussionPoints: ["Point A", "Point B"],
+        reflectionPoints: ["Point A", "Point B"],
       },
     });
 

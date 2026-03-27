@@ -1,4 +1,4 @@
-import { clinicianNoteDisclaimer } from "./constants";
+import { journalSummaryDisclaimer } from "./constants";
 import { formatFriendlyDate } from "./date";
 function average(numbers) {
     if (numbers.length === 0) {
@@ -20,7 +20,7 @@ function topItems(values, maxItems = 5) {
         .slice(0, maxItems)
         .map(([value]) => value);
 }
-export function buildClinicianSummary({ rangeStart, rangeEnd, checkins, triggers, analysis, }) {
+export function buildSummary({ rangeStart, rangeEnd, checkins, triggers, analysis, }) {
     const avgAnxiety = average(checkins.map((item) => item.anxietyLevel));
     const symptomList = topItems(checkins.flatMap((item) => item.symptoms));
     const triggerList = topItems(triggers.flatMap((item) => [...item.stressTags, ...item.consumedTags]));
@@ -35,10 +35,10 @@ export function buildClinicianSummary({ rangeStart, rangeEnd, checkins, triggers
         return totals;
     }, { taken: 0, skipped: 0, notLogged: 0 });
     const lines = [
-        "Pre-Appointment Summary",
+        "Journal Summary",
         `${formatFriendlyDate(rangeStart)} to ${formatFriendlyDate(rangeEnd)}`,
         "",
-        clinicianNoteDisclaimer,
+        journalSummaryDisclaimer,
         "",
         `Check-ins completed: ${checkins.length}`,
         `Average anxiety level: ${avgAnxiety ?? "Not enough data"}`,
@@ -46,7 +46,7 @@ export function buildClinicianSummary({ rangeStart, rangeEnd, checkins, triggers
         `Frequent stressors or consumed items: ${triggerList.join(", ") || "None logged"}`,
         `Medication logs: taken ${medicationCounts.taken}, skipped ${medicationCounts.skipped}, not logged ${medicationCounts.notLogged}`,
         "",
-        "Recent notes to discuss:",
+        "Recent notes:",
         ...checkins
             .filter((item) => item.note || item.symptomNote)
             .slice(-3)
@@ -64,7 +64,7 @@ export function buildClinicianSummary({ rangeStart, rangeEnd, checkins, triggers
         }));
     }
     if (analysis) {
-        lines.push("", "AI pattern review:", `Overview: ${analysis.analysis.overview}`, ...analysis.analysis.patterns.slice(0, 3).map((item) => `- ${item}`), "", "Suggested discussion points:", ...analysis.analysis.discussionPoints.slice(0, 4).map((item) => `- ${item}`));
+        lines.push("", "What your entries show:", `Overview: ${analysis.analysis.overview}`, ...analysis.analysis.patterns.slice(0, 3).map((item) => `- ${item}`), "", "Worth reflecting on:", ...analysis.analysis.reflectionPoints.slice(0, 4).map((item) => `- ${item}`));
     }
     return {
         rangeStart,

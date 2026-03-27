@@ -1,6 +1,7 @@
 export const APP_NAME = "Anxiety Journal";
 export const ANALYSIS_MODEL = "claude-sonnet-4-20250514";
-export const ANALYSIS_PROMPT_VERSION = "2026-03-25.v1";
+export const ANALYSIS_PROMPT_VERSION = "2026-03-27.v1";
+export const REFLECTION_MODEL = "claude-sonnet-4-20250514";
 export const MIN_ANALYSIS_CHECKINS = 5;
 export const MAX_ANALYSIS_RANGE_DAYS = 90;
 export const DEFAULT_RANGE_PRESET = 30;
@@ -61,4 +62,4 @@ export const rangePresetOptions = [
     { days: 30, label: "30 days" },
 ];
 export const crisisSupportCopy = "This is a supportive wellness tool, not emergency support or medical advice. If you feel unsafe or may harm yourself, contact local emergency services or a crisis line right away.";
-export const clinicianNoteDisclaimer = "Prepared from self-reported entries. Use this as a conversation starter with your doctor or therapist, not a diagnosis.";
+export const journalSummaryDisclaimer = "Prepared from self-reported entries. Keep for yourself, share with someone you trust, or bring to an appointment.";

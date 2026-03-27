@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { DEFAULT_RANGE_PRESET } from "../../shared/constants";
 import { buildPresetRange } from "../../shared/date";
-import { buildClinicianSummary } from "../../shared/summary";
+import { buildSummary } from "../../shared/summary";
 import Card from "../components/Card";
 import RangeSelector from "../components/RangeSelector";
 import { useAuth } from "../hooks/useAuth";
@@ -50,7 +50,7 @@ export default function SummaryPage() {
       return null;
     }
 
-    return buildClinicianSummary({
+    return buildSummary({
       rangeStart,
       rangeEnd,
       checkins: snapshot.checkins,
@@ -73,10 +73,9 @@ export default function SummaryPage() {
     <div className={styles.page}>
       <div className={styles.pageHeader}>
         <p className={styles.eyebrow}>Summary</p>
-        <h2 className={styles.title}>Prepare a clean note for a doctor or therapist</h2>
+        <h2 className={styles.title}>Export a summary of your journal</h2>
         <p className={styles.subtitle}>
-          This is a deterministic summary built from your entries, with the latest saved
-          AI review for the selected range folded in when available.
+          Keep for yourself, share with someone you trust, or bring to an appointment.
         </p>
       </div>
 
@@ -95,7 +94,7 @@ export default function SummaryPage() {
 
       <div className={styles.twoColumn}>
         <Card
-          title="Clinician note"
+          title="Journal summary"
           subtitle={loading ? "Refreshing..." : "Ready to copy or download."}
           action={
             summary ? (

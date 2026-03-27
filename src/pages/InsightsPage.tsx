@@ -129,8 +129,8 @@ export default function InsightsPage() {
         <p className={styles.eyebrow}>Insights</p>
         <h2 className={styles.title}>Review trends when you want the bigger picture</h2>
         <p className={styles.subtitle}>
-          Insights run only when you ask. They summarize patterns to support a
-          conversation, not to diagnose or give treatment advice.
+          Insights run only when you ask. They help you see patterns —
+          not to diagnose or give treatment advice.
         </p>
       </div>
 
@@ -189,7 +189,7 @@ export default function InsightsPage() {
 
       <div className={styles.twoColumn}>
         <Card
-          title="AI pattern review"
+          title="What your entries show"
           subtitle={
             snapshot?.latestAnalysis?.cached
               ? "Returned from a matching saved analysis."
@@ -223,7 +223,7 @@ export default function InsightsPage() {
           )}
         </Card>
 
-        <Card title="Discussion prompts" subtitle="Good starting points for therapy or medical visits.">
+        <Card title="Worth reflecting on" subtitle="Things that stood out from your entries.">
           {snapshot?.latestAnalysis ? (
             <div className={styles.grid}>
               <div>
@@ -243,9 +243,9 @@ export default function InsightsPage() {
                 </ul>
               </div>
               <div>
-                <strong>Bring to your next conversation</strong>
+                <strong>Worth sitting with</strong>
                 <ul>
-                  {snapshot.latestAnalysis.analysis.discussionPoints.map((item) => (
+                  {snapshot.latestAnalysis.analysis.reflectionPoints.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
                 </ul>
@@ -253,7 +253,7 @@ export default function InsightsPage() {
             </div>
           ) : (
             <p className={styles.smallNote}>
-              Generated discussion points will appear here after an analysis run.
+              Reflection points will appear here after an analysis run.
             </p>
           )}
         </Card>

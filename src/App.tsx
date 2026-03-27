@@ -1,6 +1,7 @@
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import AppShell from "./components/AppShell";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
+import HistoryPage from "./pages/HistoryPage";
 import HomePage from "./pages/HomePage";
 import InsightsPage from "./pages/InsightsPage";
 import SettingsPage from "./pages/SettingsPage";
@@ -48,6 +49,7 @@ export default function App() {
         <Route path="/app" element={<ProtectedLayout />}>
           <Route index element={<Navigate to="/app/today" replace />} />
           <Route path="today" element={<TodayPage />} />
+          <Route path="history" element={<HistoryPage />} />
           <Route path="triggers" element={<TriggersPage />} />
           <Route path="insights" element={<InsightsPage />} />
           <Route path="summary" element={<SummaryPage />} />

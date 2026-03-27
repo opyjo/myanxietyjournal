@@ -5,7 +5,8 @@ import { defineSecret } from "firebase-functions/params";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/v2";
 import { createHash } from "node:crypto";
-import { ANALYSIS_MODEL, ANALYSIS_PROMPT_VERSION, MIN_ANALYSIS_CHECKINS } from "../../shared/constants";
+import { ANALYSIS_MODEL, ANALYSIS_PROMPT_VERSION, MIN_ANALYSIS_CHECKINS, REFLECTION_MODEL } from "../../shared/constants";
+import { buildReflectionPrompt } from "../../shared/reflection";
 import {
   buildAnalysisPrompt,
   parseAnalysisJson,
@@ -123,8 +124,8 @@ function mapAnalysisRun(
       medicationConsistency: Array.isArray(data.analysis?.medicationConsistency)
         ? data.analysis.medicationConsistency.map(String)
         : [],
-      discussionPoints: Array.isArray(data.analysis?.discussionPoints)
-        ? data.analysis.discussionPoints.map(String)
+      reflectionPoints: Array.isArray(data.analysis?.reflectionPoints)
+        ? data.analysis.reflectionPoints.map(String)
         : [],
     },
   };
@@ -358,7 +359,88 @@ export async function analyzePatternsCore(
   });
 }
 
-export const analyzePatterns = onCall({ secrets: [anthropicApiKey] }, async (request) => {
+export const generateDailyReflection = onCall({ secrets: [anthropicApiKey], cors: true }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "You must be signed in.");
+  }
+
+  const date = typeof request.data?.date === "string" ? request.data.date : "";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    throw new HttpsError("invalid-argument", "A valid date (YYYY-MM-DD) is required.");
+  }
+
+  const uid = request.auth.uid;
+
+  try {
+    const checkinDoc = await firestore
+      .collection("users")
+      .doc(uid)
+      .collection("dailyCheckins")
+      .doc(date)
+      .get();
+
+    if (!checkinDoc.exists) {
+      throw new HttpsError("not-found", "No check-in found for this date.");
+    }
+
+    const checkin = mapDailyCheckin(checkinDoc.id, checkinDoc.data()!);
+    const checkinFingerprint = createHash("sha256")
+      .update(JSON.stringify(checkin))
+      .digest("hex");
+
+    // Check cache
+    const existingDoc = await firestore
+      .collection("users")
+      .doc(uid)
+      .collection("dailyReflections")
+      .doc(date)
+      .get();
+
+    if (existingDoc.exists && existingDoc.data()?.checkinFingerprint === checkinFingerprint) {
+      return { text: existingDoc.data()!.text, cached: true };
+    }
+
+    const client = getAnthropicClient();
+    const prompt = buildReflectionPrompt(checkin);
+    const response = await client.messages.create({
+      model: REFLECTION_MODEL,
+      max_tokens: 300,
+      system: prompt.system,
+      messages: [{ role: "user", content: prompt.user }],
+    });
+
+    const text = response.content
+      .filter((item): item is Anthropic.TextBlock => item.type === "text")
+      .map((item) => item.text)
+      .join("\n")
+      .trim();
+
+    await firestore
+      .collection("users")
+      .doc(uid)
+      .collection("dailyReflections")
+      .doc(date)
+      .set({
+        text,
+        checkinFingerprint,
+        createdAt: Timestamp.now(),
+      });
+
+    return { text, cached: false };
+  } catch (error) {
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+
+    logger.error("generateDailyReflection failed", error);
+    throw new HttpsError(
+      "internal",
+      error instanceof Error ? error.message : "Reflection generation failed.",
+    );
+  }
+});
+
+export const analyzePatterns = onCall({ secrets: [anthropicApiKey], cors: true }, async (request) => {
   if (!request.auth?.uid) {
     throw new HttpsError("unauthenticated", "You must be signed in.");
   }

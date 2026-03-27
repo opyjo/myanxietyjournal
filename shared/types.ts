@@ -60,7 +60,7 @@ export interface AnalysisResult {
   triggerObservations: string[];
   sleepEnergyLinks: string[];
   medicationConsistency: string[];
-  discussionPoints: string[];
+  reflectionPoints: string[];
 }
 
 export interface AnalysisRun {
@@ -80,7 +80,14 @@ export interface AnalysisRun {
   analysis: AnalysisResult;
 }
 
-export interface ClinicianSummary {
+export interface DailyReflection {
+  date: string;
+  text: string;
+  checkinFingerprint: string;
+  createdAt?: string;
+}
+
+export interface JournalSummary {
   rangeStart: string;
   rangeEnd: string;
   generatedAt: string;

@@ -31,10 +31,10 @@ describe("analysis helpers", () => {
   "triggerObservations": ["Coffee appears alongside several higher-anxiety days."],
   "sleepEnergyLinks": ["Lower sleep quality often appears with lower energy."],
   "medicationConsistency": ["Medication logging is mostly stable."],
-  "discussionPoints": ["Ask whether sleep disruption may be amplifying anxiety.", "Review caffeine timing."]
+  "reflectionPoints": ["Ask whether sleep disruption may be amplifying anxiety.", "Review caffeine timing."]
 }
 \`\`\``);
         expect(result.overview).toBe("Pattern summary.");
-        expect(result.discussionPoints).toHaveLength(2);
+        expect(result.reflectionPoints).toHaveLength(2);
     });
 });

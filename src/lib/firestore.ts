@@ -83,6 +83,13 @@ export async function listRecentTriggerLogs(uid: string) {
   return snapshot.docs.map(mapTriggerLogDoc);
 }
 
+function stripUndefined<T>(obj: T): T {
+  if (typeof obj !== "object" || obj === null) return obj;
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, v]) => v !== undefined),
+  ) as T;
+}
+
 export async function saveDailyCheckin(
   uid: string,
   payload: Omit<DailyCheckin, "id" | "createdAt" | "updatedAt">,
@@ -93,7 +100,8 @@ export async function saveDailyCheckin(
   await setDoc(
     ref,
     {
-      ...payload,
+      ...stripUndefined(payload),
+      medicationStatuses: payload.medicationStatuses.map(stripUndefined),
       createdAt: existing.exists() ? existing.data().createdAt ?? serverTimestamp() : serverTimestamp(),
       updatedAt: serverTimestamp(),
     },
@@ -240,6 +248,20 @@ export async function getRangeSnapshot(uid: string, rangeStart: string, rangeEnd
   ]);
 
   return { checkins, triggers, latestAnalysis };
+}
+
+export async function callGenerateDailyReflection(date: string) {
+  if (!functions) {
+    throw new Error("Firebase is not configured.");
+  }
+
+  const callable = httpsCallable<
+    { date: string },
+    { text: string; cached: boolean }
+  >(functions, "generateDailyReflection");
+
+  const response = await callable({ date });
+  return response.data;
 }
 
 export async function callAnalyzePatterns(rangeStart: string, rangeEnd: string) {

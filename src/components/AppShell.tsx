@@ -6,6 +6,7 @@ import styles from "./AppShell.module.css";
 
 const navItems = [
   { to: "/app/today", label: "Today" },
+  { to: "/app/history", label: "History" },
   { to: "/app/triggers", label: "Triggers" },
   { to: "/app/insights", label: "Insights" },
   { to: "/app/summary", label: "Summary" },

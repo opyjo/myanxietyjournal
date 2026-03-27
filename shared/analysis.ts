@@ -12,7 +12,7 @@ export const analysisResultSchema = z.object({
   triggerObservations: z.array(z.string().trim().min(1).max(300)).min(1).max(6),
   sleepEnergyLinks: z.array(z.string().trim().min(1).max(300)).min(1).max(6),
   medicationConsistency: z.array(z.string().trim().min(1).max(300)).min(1).max(6),
-  discussionPoints: z.array(z.string().trim().min(1).max(300)).min(2).max(8),
+  reflectionPoints: z.array(z.string().trim().min(1).max(300)).min(2).max(8),
 });
 
 export function sanitizeSourceBundle(bundle: AnalysisSourceBundle) {
@@ -59,7 +59,7 @@ export function buildAnalysisPrompt(bundle: AnalysisSourceBundle) {
   }
 
   const system = [
-    "You are an assistant that summarizes wellness journaling data for a user preparing to talk with a doctor or therapist.",
+    "You are a supportive companion helping someone understand patterns in their wellness journal.",
     "Never diagnose, predict emergencies, instruct medication changes, or claim causality without support in the data.",
     "Use tentative language such as 'may', 'seems', or 'could be worth discussing'.",
     "Return JSON only that matches the requested schema.",
@@ -67,7 +67,7 @@ export function buildAnalysisPrompt(bundle: AnalysisSourceBundle) {
 
   const user = JSON.stringify(
     {
-      task: "Analyze patterns across anxiety journal entries.",
+      task: "Help this person understand patterns across their anxiety journal entries.",
       constraints: {
         noDiagnosis: true,
         noEmergencyGuidance: true,
@@ -79,7 +79,7 @@ export function buildAnalysisPrompt(bundle: AnalysisSourceBundle) {
           triggerObservations: "string[]",
           sleepEnergyLinks: "string[]",
           medicationConsistency: "string[]",
-          discussionPoints: "string[]",
+          reflectionPoints: "string[]",
         },
       },
       metadata: {

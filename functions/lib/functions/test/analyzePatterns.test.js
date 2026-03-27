@@ -46,7 +46,7 @@ describe("analyzePatternsCore", () => {
                 triggerObservations: ["Trigger"],
                 sleepEnergyLinks: ["Sleep"],
                 medicationConsistency: ["Consistency"],
-                discussionPoints: ["Point A", "Point B"],
+                reflectionPoints: ["Point A", "Point B"],
             },
         };
         const generateAnalysis = vi.fn();
@@ -79,7 +79,7 @@ describe("analyzePatternsCore", () => {
                 triggerObservations: ["Trigger"],
                 sleepEnergyLinks: ["Sleep"],
                 medicationConsistency: ["Consistency"],
-                discussionPoints: ["Point A", "Point B"],
+                reflectionPoints: ["Point A", "Point B"],
             },
         });
         const result = await analyzePatternsCore({
@@ -96,7 +96,7 @@ describe("analyzePatternsCore", () => {
                 triggerObservations: ["Trigger"],
                 sleepEnergyLinks: ["Sleep"],
                 medicationConsistency: ["Consistency"],
-                discussionPoints: ["Point A", "Point B"],
+                reflectionPoints: ["Point A", "Point B"],
             }),
             saveAnalysisRun,
         });

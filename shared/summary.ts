@@ -1,8 +1,8 @@
-import { clinicianNoteDisclaimer } from "./constants";
+import { journalSummaryDisclaimer } from "./constants";
 import { formatFriendlyDate } from "./date";
 import type {
   AnalysisRun,
-  ClinicianSummary,
+  JournalSummary,
   DailyCheckin,
   TriggerLog,
 } from "./types";
@@ -36,7 +36,7 @@ function topItems(values: string[], maxItems = 5) {
     .map(([value]) => value);
 }
 
-export function buildClinicianSummary({
+export function buildSummary({
   rangeStart,
   rangeEnd,
   checkins,
@@ -48,7 +48,7 @@ export function buildClinicianSummary({
   checkins: DailyCheckin[];
   triggers: TriggerLog[];
   analysis?: AnalysisRun | null;
-}): ClinicianSummary {
+}): JournalSummary {
   const avgAnxiety = average(checkins.map((item) => item.anxietyLevel));
   const symptomList = topItems(checkins.flatMap((item) => item.symptoms));
   const triggerList = topItems(
@@ -70,10 +70,10 @@ export function buildClinicianSummary({
     );
 
   const lines = [
-    "Pre-Appointment Summary",
+    "Journal Summary",
     `${formatFriendlyDate(rangeStart)} to ${formatFriendlyDate(rangeEnd)}`,
     "",
-    clinicianNoteDisclaimer,
+    journalSummaryDisclaimer,
     "",
     `Check-ins completed: ${checkins.length}`,
     `Average anxiety level: ${avgAnxiety ?? "Not enough data"}`,
@@ -81,7 +81,7 @@ export function buildClinicianSummary({
     `Frequent stressors or consumed items: ${triggerList.join(", ") || "None logged"}`,
     `Medication logs: taken ${medicationCounts.taken}, skipped ${medicationCounts.skipped}, not logged ${medicationCounts.notLogged}`,
     "",
-    "Recent notes to discuss:",
+    "Recent notes:",
     ...checkins
       .filter((item) => item.note || item.symptomNote)
       .slice(-3)
@@ -110,12 +110,12 @@ export function buildClinicianSummary({
   if (analysis) {
     lines.push(
       "",
-      "AI pattern review:",
+      "What your entries show:",
       `Overview: ${analysis.analysis.overview}`,
       ...analysis.analysis.patterns.slice(0, 3).map((item) => `- ${item}`),
       "",
-      "Suggested discussion points:",
-      ...analysis.analysis.discussionPoints.slice(0, 4).map((item) => `- ${item}`),
+      "Worth reflecting on:",
+      ...analysis.analysis.reflectionPoints.slice(0, 4).map((item) => `- ${item}`),
     );
   }
 

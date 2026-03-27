@@ -56,7 +56,7 @@ describe("analyzePatternsCore", () => {
         triggerObservations: ["Trigger"],
         sleepEnergyLinks: ["Sleep"],
         medicationConsistency: ["Consistency"],
-        discussionPoints: ["Point A", "Point B"],
+        reflectionPoints: ["Point A", "Point B"],
       },
     };
 
@@ -96,7 +96,7 @@ describe("analyzePatternsCore", () => {
         triggerObservations: ["Trigger"],
         sleepEnergyLinks: ["Sleep"],
         medicationConsistency: ["Consistency"],
-        discussionPoints: ["Point A", "Point B"],
+        reflectionPoints: ["Point A", "Point B"],
       },
     });
 
@@ -116,7 +116,7 @@ describe("analyzePatternsCore", () => {
           triggerObservations: ["Trigger"],
           sleepEnergyLinks: ["Sleep"],
           medicationConsistency: ["Consistency"],
-          discussionPoints: ["Point A", "Point B"],
+          reflectionPoints: ["Point A", "Point B"],
         }),
         saveAnalysisRun,
       },

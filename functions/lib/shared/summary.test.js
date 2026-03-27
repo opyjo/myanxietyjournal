@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildClinicianSummary } from "./summary";
-describe("buildClinicianSummary", () => {
+import { buildSummary } from "./summary";
+describe("buildSummary", () => {
     it("creates a text summary from entries and triggers", () => {
         vi.useFakeTimers();
         vi.setSystemTime(new Date("2026-03-25T12:00:00.000Z"));
-        const result = buildClinicianSummary({
+        const result = buildSummary({
             rangeStart: "2026-03-01",
             rangeEnd: "2026-03-07",
             checkins: [
@@ -40,7 +40,7 @@ describe("buildClinicianSummary", () => {
             analysis: null,
         });
         expect(result.stats.avgAnxiety).toBe(7);
-        expect(result.text).toContain("Pre-Appointment Summary");
+        expect(result.text).toContain("Journal Summary");
         expect(result.text).toContain("Work pressure");
         vi.useRealTimers();
     });
