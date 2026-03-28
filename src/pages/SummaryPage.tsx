@@ -4,10 +4,9 @@ import { buildPresetRange } from "../../shared/date";
 import { buildSummary } from "../../shared/summary";
 import Card from "../components/Card";
 import RangeSelector from "../components/RangeSelector";
+import { Button } from "../components/ui/button";
 import { useAuth } from "../hooks/useAuth";
 import { getRangeSnapshot } from "../lib/firestore";
-import styles from "./Page.module.css";
-import ui from "../components/ui.module.css";
 
 export default function SummaryPage() {
   const { user } = useAuth();
@@ -21,35 +20,23 @@ export default function SummaryPage() {
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) {
-      return;
-    }
-
+    if (!user) return;
     let cancelled = false;
     setLoading(true);
-
     void getRangeSnapshot(user.uid, rangeStart, rangeEnd)
       .then((value) => {
-        if (!cancelled) {
-          setSnapshot(value);
-        }
+        if (!cancelled) setSnapshot(value);
       })
       .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       });
-
     return () => {
       cancelled = true;
     };
   }, [rangeEnd, rangeStart, user]);
 
   const summary = useMemo(() => {
-    if (!snapshot) {
-      return null;
-    }
-
+    if (!snapshot) return null;
     return buildSummary({
       rangeStart,
       rangeEnd,
@@ -70,11 +57,11 @@ export default function SummaryPage() {
   }
 
   return (
-    <div className={styles.page}>
-      <div className={styles.pageHeader}>
-        <p className={styles.eyebrow}>Summary</p>
-        <h2 className={styles.title}>Export a summary of your journal</h2>
-        <p className={styles.subtitle}>
+    <div className="grid gap-5">
+      <div className="grid gap-1.5 py-1">
+        <p className="text-xs uppercase tracking-widest text-zinc-400">Summary</p>
+        <h2 className="text-3xl font-bold tracking-tight m-0">Export a summary of your journal</h2>
+        <p className="text-zinc-500 max-w-xl m-0">
           Keep for yourself, share with someone you trust, or bring to an appointment.
         </p>
       </div>
@@ -90,67 +77,79 @@ export default function SummaryPage() {
         />
       </Card>
 
-      {message ? <div className={styles.success}>{message}</div> : null}
+      {message ? (
+        <div className="rounded-xl bg-green-50 border border-green-200 text-green-700 p-3 text-sm">
+          {message}
+        </div>
+      ) : null}
 
-      <div className={styles.twoColumn}>
+      <div className="grid md:grid-cols-2 gap-4 items-start">
         <Card
           title="Journal summary"
           subtitle={loading ? "Refreshing..." : "Ready to copy or download."}
           action={
             summary ? (
-              <div className={styles.inlineActions}>
-                <button
+              <div className="flex flex-wrap gap-3">
+                <Button
                   type="button"
-                  className={ui.secondaryButton}
+                  variant="secondary"
+                  size="sm"
                   onClick={async () => {
                     await navigator.clipboard.writeText(summary.text);
                     setMessage("Summary copied to your clipboard.");
                   }}
                 >
                   Copy text
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
-                  className={ui.ghostButton}
+                  variant="ghost"
+                  size="sm"
                   onClick={() => {
                     downloadTextFile(summary.text);
                     setMessage("Summary downloaded as a text file.");
                   }}
                 >
                   Download .txt
-                </button>
+                </Button>
               </div>
             ) : null
           }
         >
           {summary ? (
-            <textarea className={styles.summaryBox} readOnly value={summary.text} />
+            <textarea
+              className="w-full min-h-[24rem] rounded-xl border border-zinc-200 bg-white/80 px-3.5 py-2.5 text-sm leading-relaxed resize-vertical focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b97344]/40"
+              readOnly
+              value={summary.text}
+            />
           ) : (
-            <p className={styles.smallNote}>
+            <p className="text-sm text-zinc-500 m-0">
               Add some check-ins first. Your summary will appear here once there is data in
               the selected range.
             </p>
           )}
         </Card>
 
-        <Card title="What’s included" subtitle="A quick preview of the structured inputs.">
-          <div className={styles.metricGrid}>
-            <article className={styles.metricCard}>
-              <p className={styles.metricLabel}>Check-ins</p>
-              <p className={styles.metricValue}>{snapshot?.checkins.length ?? 0}</p>
-            </article>
-            <article className={styles.metricCard}>
-              <p className={styles.metricLabel}>Trigger logs</p>
-              <p className={styles.metricValue}>{snapshot?.triggers.length ?? 0}</p>
-            </article>
-            <article className={styles.metricCard}>
-              <p className={styles.metricLabel}>AI review</p>
-              <p className={styles.metricValue}>{snapshot?.latestAnalysis ? "Included" : "Not yet"}</p>
-            </article>
+        <Card title="What's included" subtitle="A quick preview of the structured inputs.">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4">
+              <p className="text-xs text-zinc-500 m-0">Check-ins</p>
+              <p className="text-2xl font-bold m-0 mt-1">{snapshot?.checkins.length ?? 0}</p>
+            </div>
+            <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4">
+              <p className="text-xs text-zinc-500 m-0">Trigger logs</p>
+              <p className="text-2xl font-bold m-0 mt-1">{snapshot?.triggers.length ?? 0}</p>
+            </div>
+            <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4">
+              <p className="text-xs text-zinc-500 m-0">AI review</p>
+              <p className="text-2xl font-bold m-0 mt-1">
+                {snapshot?.latestAnalysis ? "Included" : "Not yet"}
+              </p>
+            </div>
           </div>
-          <p className={styles.smallNote}>
-            The note includes top symptoms, trigger context, medication adherence, recent
-            notes, and discussion points when an AI review exists for this date range.
+          <p className="text-sm text-zinc-500 m-0">
+            The note includes top symptoms, trigger context, medication adherence, recent notes, and
+            discussion points when an AI review exists for this date range.
           </p>
         </Card>
       </div>

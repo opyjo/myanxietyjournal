@@ -1,5 +1,11 @@
 import type { PropsWithChildren, ReactNode } from "react";
-import styles from "./ui.module.css";
+import {
+  Card as ShadCard,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 
 interface CardProps extends PropsWithChildren {
   title?: string;
@@ -9,17 +15,19 @@ interface CardProps extends PropsWithChildren {
 
 export default function Card({ children, title, subtitle, action }: CardProps) {
   return (
-    <section className={styles.card}>
+    <ShadCard>
       {(title || subtitle || action) && (
-        <div className={styles.cardHeader}>
-          <div>
-            {title ? <h2 className={styles.cardTitle}>{title}</h2> : null}
-            {subtitle ? <p className={styles.cardSubtitle}>{subtitle}</p> : null}
+        <CardHeader>
+          <div className="flex justify-between items-start gap-4">
+            <div>
+              {title ? <CardTitle>{title}</CardTitle> : null}
+              {subtitle ? <CardDescription>{subtitle}</CardDescription> : null}
+            </div>
+            {action ? <div>{action}</div> : null}
           </div>
-          {action ? <div>{action}</div> : null}
-        </div>
+        </CardHeader>
       )}
-      {children}
-    </section>
+      <CardContent>{children}</CardContent>
+    </ShadCard>
   );
 }

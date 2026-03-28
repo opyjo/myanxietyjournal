@@ -4,11 +4,7 @@ import { buildPresetRange, formatFriendlyDate } from "../../shared/date";
 import type { DailyCheckin, TriggerLog } from "../../shared/types";
 import Card from "../components/Card";
 import { useAuth } from "../hooks/useAuth";
-import {
-  getRangeCheckins,
-  getRangeTriggerLogs,
-} from "../lib/firestore";
-import styles from "./Page.module.css";
+import { getRangeCheckins, getRangeTriggerLogs } from "../lib/firestore";
 
 export default function HistoryPage() {
   const { user } = useAuth();
@@ -19,9 +15,7 @@ export default function HistoryPage() {
 
   useEffect(() => {
     if (!user) return;
-
     const { rangeStart, rangeEnd } = buildPresetRange(90);
-
     Promise.all([
       getRangeCheckins(user.uid, rangeStart, rangeEnd),
       getRangeTriggerLogs(user.uid, rangeStart, rangeEnd),
@@ -51,30 +45,30 @@ export default function HistoryPage() {
 
   if (loading) {
     return (
-      <div className={styles.page}>
-        <div className={styles.pageHeader}>
-          <p className={styles.eyebrow}>History</p>
-          <h2 className={styles.title}>Past check-ins</h2>
+      <div className="grid gap-5">
+        <div className="grid gap-1.5 py-1">
+          <p className="text-xs uppercase tracking-widest text-zinc-400">History</p>
+          <h2 className="text-3xl font-bold tracking-tight m-0">Past check-ins</h2>
         </div>
-        <p className={styles.smallNote}>Loading...</p>
+        <p className="text-sm text-zinc-500">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className={styles.page}>
-      <div className={styles.pageHeader}>
-        <p className={styles.eyebrow}>History</p>
-        <h2 className={styles.title}>Past check-ins</h2>
-        <p className={styles.subtitle}>
+    <div className="grid gap-5">
+      <div className="grid gap-1.5 py-1">
+        <p className="text-xs uppercase tracking-widest text-zinc-400">History</p>
+        <h2 className="text-3xl font-bold tracking-tight m-0">Past check-ins</h2>
+        <p className="text-zinc-500 max-w-xl m-0">
           Browse your journal entries from the last 90 days.
         </p>
       </div>
 
       {checkins.length === 0 ? (
-        <p className={styles.smallNote}>No check-ins found in the last 90 days.</p>
+        <p className="text-sm text-zinc-500">No check-ins found in the last 90 days.</p>
       ) : (
-        <div className={styles.list}>
+        <div className="grid gap-3">
           {checkins.map((entry) => {
             const isExpanded = expandedDate === entry.date;
             const dayTriggers = triggersByDate[entry.date] ?? [];
@@ -82,63 +76,72 @@ export default function HistoryPage() {
             return (
               <div
                 key={entry.date}
-                className={styles.listItem}
-                style={{ cursor: "pointer" }}
+                className="grid gap-2 p-4 rounded-xl bg-white/60 border border-zinc-200 cursor-pointer hover:border-zinc-300 transition-colors"
                 onClick={() => handleExpand(entry.date)}
               >
                 {/* Collapsed view — always visible */}
                 <div>
                   <strong>{formatFriendlyDate(entry.date)}</strong>
-                  <div className={styles.listMeta}>
+                  <div className="flex flex-wrap gap-2 text-sm text-zinc-500 mt-0.5">
                     <span>{moodLabel(entry.mood)}</span>
                     <span>Anxiety {entry.anxietyLevel}/10</span>
                   </div>
                 </div>
 
                 {entry.symptoms.length > 0 && (
-                  <div className={styles.tagRow}>
+                  <div className="flex flex-wrap gap-1.5">
                     {entry.symptoms.map((s) => (
-                      <span key={s} className={styles.tag}>{s}</span>
+                      <span
+                        key={s}
+                        className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-800"
+                      >
+                        {s}
+                      </span>
                     ))}
                   </div>
                 )}
 
                 {entry.note && (
-                  <p className={styles.smallNote}>
-                    {isExpanded ? entry.note : entry.note.slice(0, 120) + (entry.note.length > 120 ? "..." : "")}
+                  <p className="text-sm text-zinc-500 m-0">
+                    {isExpanded
+                      ? entry.note
+                      : entry.note.slice(0, 120) + (entry.note.length > 120 ? "..." : "")}
                   </p>
                 )}
 
                 {/* Expanded view */}
                 {isExpanded && (
                   <>
-                    <div className={styles.metricGrid}>
-                      <div className={styles.metricCard}>
-                        <p className={styles.metricLabel}>Energy</p>
-                        <p className={styles.metricValue}>{entry.energy}/5</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4">
+                        <p className="text-xs text-zinc-500 m-0">Energy</p>
+                        <p className="text-2xl font-bold m-0 mt-1">{entry.energy}/5</p>
                       </div>
-                      <div className={styles.metricCard}>
-                        <p className={styles.metricLabel}>Sleep quality</p>
-                        <p className={styles.metricValue}>{entry.sleepQuality}/5</p>
+                      <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4">
+                        <p className="text-xs text-zinc-500 m-0">Sleep quality</p>
+                        <p className="text-2xl font-bold m-0 mt-1">{entry.sleepQuality}/5</p>
                       </div>
-                      <div className={styles.metricCard}>
-                        <p className={styles.metricLabel}>Anxiety</p>
-                        <p className={styles.metricValue}>{entry.anxietyLevel}/10</p>
+                      <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4">
+                        <p className="text-xs text-zinc-500 m-0">Anxiety</p>
+                        <p className="text-2xl font-bold m-0 mt-1">{entry.anxietyLevel}/10</p>
                       </div>
                     </div>
 
                     {entry.symptomNote && (
-                      <p className={styles.smallNote}>{entry.symptomNote}</p>
+                      <p className="text-sm text-zinc-500 m-0">{entry.symptomNote}</p>
                     )}
 
                     {entry.medicationStatuses.length > 0 && (
                       <Card title="Medications">
-                        <div className={styles.list}>
+                        <div className="grid gap-3">
                           {entry.medicationStatuses.map((med) => (
-                            <div key={med.medicationId} className={styles.listItem}>
+                            <div
+                              key={med.medicationId}
+                              className="grid gap-2 p-4 rounded-xl bg-white/60 border border-zinc-200"
+                            >
                               <div>
                                 <strong>{med.name}</strong>
-                                <div className={styles.listMeta}>
+                                <div className="flex flex-wrap gap-2 text-sm text-zinc-500 mt-0.5">
                                   <span>{med.status}</span>
                                   {med.note && <span>{med.note}</span>}
                                 </div>
@@ -153,22 +156,31 @@ export default function HistoryPage() {
                       <Card title="Triggers">
                         {dayTriggers.map((trig) => (
                           <div key={trig.id} style={{ marginBottom: "0.5rem" }}>
-                            <div className={styles.tagRow}>
+                            <div className="flex flex-wrap gap-1.5">
                               {trig.stressTags.map((t) => (
-                                <span key={t} className={styles.tag}>{t}</span>
+                                <span
+                                  key={t}
+                                  className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-800"
+                                >
+                                  {t}
+                                </span>
                               ))}
                               {trig.consumedTags.map((t) => (
-                                <span key={t} className={styles.tag}>{t}</span>
+                                <span
+                                  key={t}
+                                  className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-800"
+                                >
+                                  {t}
+                                </span>
                               ))}
                             </div>
                             {trig.note && (
-                              <p className={styles.smallNote}>{trig.note}</p>
+                              <p className="text-sm text-zinc-500 m-0 mt-1">{trig.note}</p>
                             )}
                           </div>
                         ))}
                       </Card>
                     )}
-
                   </>
                 )}
               </div>

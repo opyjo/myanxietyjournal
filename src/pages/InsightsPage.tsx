@@ -1,22 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  DEFAULT_RANGE_PRESET,
-  MIN_ANALYSIS_CHECKINS,
-} from "../../shared/constants";
+import { DEFAULT_RANGE_PRESET, MIN_ANALYSIS_CHECKINS } from "../../shared/constants";
 import { buildPresetRange, clampRange } from "../../shared/date";
 import Card from "../components/Card";
 import RangeSelector from "../components/RangeSelector";
+import { Button } from "../components/ui/button";
 import { useAuth } from "../hooks/useAuth";
 import { acceptAnalysisDisclosure, hasAcceptedAnalysisDisclosure } from "../lib/disclosure";
 import { callAnalyzePatterns, getRangeSnapshot } from "../lib/firestore";
-import styles from "./Page.module.css";
-import ui from "../components/ui.module.css";
 
 function average(numbers: number[]) {
-  if (!numbers.length) {
-    return "—";
-  }
-
+  if (!numbers.length) return "—";
   return (numbers.reduce((sum, value) => sum + value, 0) / numbers.length).toFixed(1);
 }
 
@@ -34,38 +27,26 @@ export default function InsightsPage() {
   const [disclosureAccepted, setDisclosureAccepted] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      return;
-    }
-
+    if (!user) return;
     setDisclosureAccepted(hasAcceptedAnalysisDisclosure(user.uid));
   }, [user]);
 
   useEffect(() => {
-    if (!user) {
-      return;
-    }
-
+    if (!user) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
     void getRangeSnapshot(user.uid, rangeStart, rangeEnd)
       .then((value) => {
-        if (!cancelled) {
-          setSnapshot(value);
-        }
+        if (!cancelled) setSnapshot(value);
       })
       .catch((reason) => {
-        if (!cancelled) {
+        if (!cancelled)
           setError(reason instanceof Error ? reason.message : "Could not load insights.");
-        }
       })
       .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       });
-
     return () => {
       cancelled = true;
     };
@@ -94,20 +75,15 @@ export default function InsightsPage() {
   }, [snapshot]);
 
   async function runAnalysis() {
-    if (!user) {
-      return;
-    }
-
+    if (!user) return;
     try {
       clampRange(rangeStart, rangeEnd);
       setRunning(true);
       setError(null);
-
       if (!disclosureAccepted) {
         acceptAnalysisDisclosure(user.uid);
         setDisclosureAccepted(true);
       }
-
       const analysis = await callAnalyzePatterns(rangeStart, rangeEnd);
       setSnapshot((previous) =>
         previous
@@ -124,13 +100,15 @@ export default function InsightsPage() {
   const checkinCount = snapshot?.checkins.length ?? 0;
 
   return (
-    <div className={styles.page}>
-      <div className={styles.pageHeader}>
-        <p className={styles.eyebrow}>Insights</p>
-        <h2 className={styles.title}>Review trends when you want the bigger picture</h2>
-        <p className={styles.subtitle}>
-          Insights run only when you ask. They help you see patterns —
-          not to diagnose or give treatment advice.
+    <div className="grid gap-5">
+      <div className="grid gap-1.5 py-1">
+        <p className="text-xs uppercase tracking-widest text-zinc-400">Insights</p>
+        <h2 className="text-3xl font-bold tracking-tight m-0">
+          Review trends when you want the bigger picture
+        </h2>
+        <p className="text-zinc-500 max-w-xl m-0">
+          Insights run only when you ask. They help you see patterns — not to diagnose or give
+          treatment advice.
         </p>
       </div>
 
@@ -144,50 +122,57 @@ export default function InsightsPage() {
           }}
         />
         {!disclosureAccepted ? (
-          <div className={styles.alert}>
-            On first use, selected check-ins, trigger notes, and medication logs are
-            sent to Claude for analysis.
+          <div className="rounded-xl bg-red-50 border border-red-200 text-red-700 p-3 text-sm">
+            On first use, selected check-ins, trigger notes, and medication logs are sent to Claude
+            for analysis.
           </div>
         ) : null}
-        <div className={styles.inlineActions}>
-          <button
+        <div className="flex flex-wrap gap-3 items-center">
+          <Button
             type="button"
-            className={ui.primaryButton}
             onClick={() => runAnalysis()}
             disabled={running || loading || checkinCount < MIN_ANALYSIS_CHECKINS}
           >
             {running ? "Analyzing..." : "Generate insights"}
-          </button>
-          <p className={styles.smallNote}>
+          </Button>
+          <p className="text-sm text-zinc-500 m-0">
             Need at least {MIN_ANALYSIS_CHECKINS} check-ins in the selected range.
           </p>
         </div>
       </Card>
 
-      {error ? <div className={styles.alert}>{error}</div> : null}
+      {error ? (
+        <div className="rounded-xl bg-red-50 border border-red-200 text-red-700 p-3 text-sm">
+          {error}
+        </div>
+      ) : null}
 
-      <div className={styles.metricGrid}>
-        <article className={styles.metricCard}>
-          <p className={styles.metricLabel}>Check-ins</p>
-          <p className={styles.metricValue}>{loading ? "..." : checkinCount}</p>
-        </article>
-        <article className={styles.metricCard}>
-          <p className={styles.metricLabel}>Average anxiety</p>
-          <p className={styles.metricValue}>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4">
+          <p className="text-xs text-zinc-500 m-0">Check-ins</p>
+          <p className="text-2xl font-bold m-0 mt-1">{loading ? "..." : checkinCount}</p>
+        </div>
+        <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4">
+          <p className="text-xs text-zinc-500 m-0">Average anxiety</p>
+          <p className="text-2xl font-bold m-0 mt-1">
             {loading ? "..." : average(snapshot?.checkins.map((item) => item.anxietyLevel) || [])}
           </p>
-        </article>
-        <article className={styles.metricCard}>
-          <p className={styles.metricLabel}>Top symptoms</p>
-          <p className={styles.metricValue}>{loading ? "..." : topSymptoms.join(", ") || "—"}</p>
-        </article>
-        <article className={styles.metricCard}>
-          <p className={styles.metricLabel}>Common triggers</p>
-          <p className={styles.metricValue}>{loading ? "..." : topTriggers.join(", ") || "—"}</p>
-        </article>
+        </div>
+        <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4">
+          <p className="text-xs text-zinc-500 m-0">Top symptoms</p>
+          <p className="text-2xl font-bold m-0 mt-1">
+            {loading ? "..." : topSymptoms.join(", ") || "—"}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4">
+          <p className="text-xs text-zinc-500 m-0">Common triggers</p>
+          <p className="text-2xl font-bold m-0 mt-1">
+            {loading ? "..." : topTriggers.join(", ") || "—"}
+          </p>
+        </div>
       </div>
 
-      <div className={styles.twoColumn}>
+      <div className="grid md:grid-cols-2 gap-4 items-start">
         <Card
           title="What your entries show"
           subtitle={
@@ -197,8 +182,8 @@ export default function InsightsPage() {
           }
         >
           {snapshot?.latestAnalysis ? (
-            <div className={styles.grid}>
-              <p>{snapshot.latestAnalysis.analysis.overview}</p>
+            <div className="grid gap-4">
+              <p className="m-0">{snapshot.latestAnalysis.analysis.overview}</p>
               <div>
                 <strong>Patterns</strong>
                 <ul>
@@ -217,15 +202,15 @@ export default function InsightsPage() {
               </div>
             </div>
           ) : (
-            <p className={styles.smallNote}>
-              No analysis saved for this range yet. Generate one when you’re ready.
+            <p className="text-sm text-zinc-500 m-0">
+              No analysis saved for this range yet. Generate one when you're ready.
             </p>
           )}
         </Card>
 
         <Card title="Worth reflecting on" subtitle="Things that stood out from your entries.">
           {snapshot?.latestAnalysis ? (
-            <div className={styles.grid}>
+            <div className="grid gap-4">
               <div>
                 <strong>Sleep and energy</strong>
                 <ul>
@@ -252,7 +237,7 @@ export default function InsightsPage() {
               </div>
             </div>
           ) : (
-            <p className={styles.smallNote}>
+            <p className="text-sm text-zinc-500 m-0">
               Reflection points will appear here after an analysis run.
             </p>
           )}

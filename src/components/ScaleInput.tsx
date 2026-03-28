@@ -1,4 +1,4 @@
-import styles from "./ui.module.css";
+import { cn } from "../lib/utils";
 
 interface ScaleInputProps {
   label: string;
@@ -9,29 +9,27 @@ interface ScaleInputProps {
   onChange: (value: number) => void;
 }
 
-export default function ScaleInput({
-  label,
-  helper,
-  min,
-  max,
-  value,
-  onChange,
-}: ScaleInputProps) {
+export default function ScaleInput({ label, helper, min, max, value, onChange }: ScaleInputProps) {
   return (
-    <div className={styles.fieldBlock}>
-      <div className={styles.fieldHeader}>
-        <label className={styles.fieldLabel}>{label}</label>
-        {helper ? <span className={styles.fieldHelper}>{helper}</span> : null}
+    <div className="grid gap-2.5">
+      <div className="flex justify-between items-center gap-4">
+        <span className="text-sm font-semibold text-zinc-800">{label}</span>
+        {helper ? <span className="text-xs text-zinc-500">{helper}</span> : null}
       </div>
-      <div className={styles.scaleRow}>
+      <div className="flex flex-wrap gap-1.5">
         {Array.from({ length: max - min + 1 }, (_, index) => {
           const number = min + index;
           return (
             <button
               key={number}
               type="button"
-              className={number === value ? styles.scaleSelected : styles.scaleButton}
               onClick={() => onChange(number)}
+              className={cn(
+                "inline-flex items-center justify-center rounded-full min-w-[2.5rem] h-10 px-3 text-sm font-medium border transition-all hover:-translate-y-px cursor-pointer",
+                number === value
+                  ? "bg-gradient-to-br from-[#b97344] to-[#9b5f38] text-white border-transparent shadow-md"
+                  : "bg-white/70 border-zinc-200 text-zinc-800",
+              )}
             >
               {number}
             </button>

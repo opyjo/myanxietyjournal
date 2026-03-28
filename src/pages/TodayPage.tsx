@@ -13,11 +13,11 @@ import type { DailyCheckin, MedicationItem } from "../../shared/types";
 import Card from "../components/Card";
 import ChipGroup from "../components/ChipGroup";
 import ScaleInput from "../components/ScaleInput";
+import { Button } from "../components/ui/button";
 import { useAuth } from "../hooks/useAuth";
 import { buildDefaultCheckinForm, buildMedicationSnapshot } from "../lib/checkin";
 import { callGenerateDailyReflection, saveDailyCheckin, watchDailyCheckin, watchMedications } from "../lib/firestore";
-import styles from "./Page.module.css";
-import ui from "../components/ui.module.css";
+import { cn } from "../lib/utils";
 
 type CheckinFormValues = z.infer<typeof dailyCheckinSchema>;
 
@@ -46,13 +46,9 @@ export default function TodayPage() {
   const formValues = watch();
 
   useEffect(() => {
-    if (!user) {
-      return;
-    }
-
+    if (!user) return;
     const unsubscribeMedications = watchMedications(user.uid, setMedications);
     const unsubscribeCheckin = watchDailyCheckin(user.uid, today, setExistingCheckin);
-
     return () => {
       unsubscribeMedications();
       unsubscribeCheckin();
@@ -60,31 +56,20 @@ export default function TodayPage() {
   }, [today, user]);
 
   useEffect(() => {
-    if (!user || !existingCheckin) {
-      return;
-    }
-
+    if (!user || !existingCheckin) return;
     let cancelled = false;
     setReflectionLoading(true);
     callGenerateDailyReflection(today)
       .then((result) => {
-        if (!cancelled) {
-          setReflection(result.text);
-        }
+        if (!cancelled) setReflection(result.text);
       })
-      .catch(() => {
-        // Reflection is a bonus — fail silently
-      })
+      .catch(() => {})
       .finally(() => {
-        if (!cancelled) {
-          setReflectionLoading(false);
-        }
+        if (!cancelled) setReflectionLoading(false);
       });
-
     return () => {
       cancelled = true;
     };
-  // Only load reflection once when existingCheckin first appears
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingCheckin?.updatedAt, today, user]);
 
@@ -93,15 +78,10 @@ export default function TodayPage() {
       medications,
       existingCheckin?.medicationStatuses,
     );
-
     if (existingCheckin) {
-      reset({
-        ...existingCheckin,
-        medicationStatuses,
-      });
+      reset({ ...existingCheckin, medicationStatuses });
       return;
     }
-
     reset(buildDefaultCheckinForm(today, medications));
   }, [existingCheckin, medications, reset, today]);
 
@@ -116,12 +96,10 @@ export default function TodayPage() {
 
   async function onSubmit(values: CheckinFormValues) {
     setSaveError(null);
-
     if (!user) {
       setSaveError("You must be signed in to save.");
       return;
     }
-
     setSaveState(null);
     try {
       await saveDailyCheckin(user.uid, {
@@ -129,8 +107,6 @@ export default function TodayPage() {
         symptoms: [...new Set(values.symptoms)],
       });
       setSaveState("Saved. You can come back and adjust this check-in any time today.");
-
-      // Generate reflection in background
       setReflectionLoading(true);
       callGenerateDailyReflection(today)
         .then((result) => setReflection(result.text))
@@ -139,22 +115,24 @@ export default function TodayPage() {
     } catch (error) {
       console.error("Save check-in failed:", error);
       setSaveError(
-        error instanceof Error ? error.message : "Something went wrong saving your check-in. Please try again.",
+        error instanceof Error
+          ? error.message
+          : "Something went wrong saving your check-in. Please try again.",
       );
     }
   }
 
   return (
-    <div className={styles.page}>
-      <div className={styles.pageHeader}>
-        <p className={styles.eyebrow}>Today</p>
-        <h2 className={styles.title}>A short check-in for right now</h2>
-        <p className={styles.subtitle}>
+    <div className="grid gap-5">
+      <div className="grid gap-1.5 py-1">
+        <p className="text-xs uppercase tracking-widest text-zinc-400">Today</p>
+        <h2 className="text-3xl font-bold tracking-tight m-0">A short check-in for right now</h2>
+        <p className="text-zinc-500 max-w-xl m-0">
           Keep it light. A few taps are enough. You can always add detail later.
         </p>
       </div>
 
-      <form className={styles.grid} onSubmit={handleSubmit(onSubmit, onValidationError)}>
+      <form className="grid gap-4" onSubmit={handleSubmit(onSubmit, onValidationError)}>
         <Card title="How today feels" subtitle="Tap the number that fits best.">
           <ScaleInput
             label="Anxiety level"
@@ -164,19 +142,22 @@ export default function TodayPage() {
             value={formValues.anxietyLevel}
             onChange={(value) => setValue("anxietyLevel", value)}
           />
-          <div className={ui.fieldBlock}>
-            <div className={ui.fieldHeader}>
-              <label className={ui.fieldLabel}>Mood</label>
+          <div className="grid gap-2.5">
+            <div className="flex justify-between items-center gap-4">
+              <span className="text-sm font-semibold text-zinc-800">Mood</span>
             </div>
-            <div className={ui.chipWrap}>
+            <div className="flex flex-wrap gap-2">
               {moodOptions.map((option) => (
                 <button
                   key={option.value}
                   type="button"
-                  className={
-                    formValues.mood === option.value ? ui.chipSelected : ui.chip
-                  }
                   onClick={() => setValue("mood", option.value)}
+                  className={cn(
+                    "inline-flex items-center rounded-full px-3.5 py-2 text-sm font-medium border transition-all hover:-translate-y-px cursor-pointer",
+                    formValues.mood === option.value
+                      ? "bg-gradient-to-br from-[#b97344] to-[#9b5f38] text-white border-transparent shadow-md"
+                      : "bg-white/70 border-zinc-200 text-zinc-800",
+                  )}
                 >
                   {option.label}
                 </button>
@@ -209,35 +190,35 @@ export default function TodayPage() {
               setValue("symptoms", toggleSelection(formValues.symptoms, value))
             }
           />
-          <div className={ui.inlineGrid}>
-            <label className={ui.inputLabel}>
-              <span>Add another symptom</span>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="grid gap-1.5">
+              <span className="text-sm font-medium text-zinc-700">Add another symptom</span>
               <input
-                className={ui.input}
+                className="flex w-full rounded-xl border border-zinc-200 bg-white/80 px-3.5 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b97344]/40"
                 value={customSymptom}
                 onChange={(event) => setCustomSymptom(event.target.value)}
                 placeholder="e.g. jaw tension"
               />
             </label>
-            <button
-              type="button"
-              className={ui.secondaryButton}
-              onClick={() => {
-                const value = customSymptom.trim();
-                if (!value) {
-                  return;
-                }
-                setValue("symptoms", toggleSelection(formValues.symptoms, value));
-                setCustomSymptom("");
-              }}
-            >
-              Add symptom
-            </button>
+            <div className="flex items-end">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  const value = customSymptom.trim();
+                  if (!value) return;
+                  setValue("symptoms", toggleSelection(formValues.symptoms, value));
+                  setCustomSymptom("");
+                }}
+              >
+                Add symptom
+              </Button>
+            </div>
           </div>
-          <label className={ui.inputLabel}>
-            <span>Physical symptom notes</span>
+          <label className="grid gap-1.5">
+            <span className="text-sm font-medium text-zinc-700">Physical symptom notes</span>
             <textarea
-              className={ui.textarea}
+              className="flex min-h-[8rem] w-full rounded-xl border border-zinc-200 bg-white/80 px-3.5 py-2.5 text-sm placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b97344]/40 resize-vertical"
               value={formValues.symptomNote || ""}
               onChange={(event) => setValue("symptomNote", event.target.value)}
               placeholder="Anything specific about intensity, timing, or body sensations?"
@@ -250,43 +231,47 @@ export default function TodayPage() {
           subtitle="Optional for today. Manage your reusable items in Settings."
         >
           {formValues.medicationStatuses.length === 0 ? (
-            <p className={styles.smallNote}>
+            <p className="text-sm text-zinc-500 m-0">
               No active medications or supplements yet. Add them in Settings to track
               them here.
             </p>
           ) : (
-            <div className={styles.list}>
+            <div className="grid gap-3">
               {formValues.medicationStatuses.map((status, index) => (
-                <div key={status.medicationId} className={styles.listItem}>
+                <div
+                  key={status.medicationId}
+                  className="grid gap-2 p-4 rounded-xl bg-white/60 border border-zinc-200"
+                >
                   <div>
                     <strong>{status.name}</strong>
-                    <div className={styles.listMeta}>
+                    <div className="flex flex-wrap gap-2 text-sm text-zinc-500 mt-0.5">
                       <span>{status.kind}</span>
                       {status.dosageLabel ? <span>{status.dosageLabel}</span> : null}
                     </div>
                   </div>
-                  <div className={ui.chipWrap}>
+                  <div className="flex flex-wrap gap-2">
                     {medicationStatusOptions.map((option) => (
                       <button
                         key={option.value}
                         type="button"
-                        className={
-                          formValues.medicationStatuses[index]?.status === option.value
-                            ? ui.chipSelected
-                            : ui.chip
-                        }
                         onClick={() =>
                           setValue(`medicationStatuses.${index}.status`, option.value)
                         }
+                        className={cn(
+                          "inline-flex items-center rounded-full px-3.5 py-2 text-sm font-medium border transition-all hover:-translate-y-px cursor-pointer",
+                          formValues.medicationStatuses[index]?.status === option.value
+                            ? "bg-gradient-to-br from-[#b97344] to-[#9b5f38] text-white border-transparent shadow-md"
+                            : "bg-white/70 border-zinc-200 text-zinc-800",
+                        )}
                       >
                         {option.label}
                       </button>
                     ))}
                   </div>
-                  <label className={ui.inputLabel}>
-                    <span>Optional note</span>
+                  <label className="grid gap-1.5">
+                    <span className="text-sm font-medium text-zinc-700">Optional note</span>
                     <input
-                      className={ui.input}
+                      className="flex w-full rounded-xl border border-zinc-200 bg-white/80 px-3.5 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b97344]/40"
                       value={formValues.medicationStatuses[index]?.note || ""}
                       onChange={(event) =>
                         setValue(`medicationStatuses.${index}.note`, event.target.value)
@@ -301,33 +286,45 @@ export default function TodayPage() {
         </Card>
 
         <Card title="Anything else" subtitle="Free text is optional.">
-          <label className={ui.inputLabel}>
-            <span>Notes</span>
+          <label className="grid gap-1.5">
+            <span className="text-sm font-medium text-zinc-700">Notes</span>
             <textarea
-              className={ui.textarea}
+              className="flex min-h-[8rem] w-full rounded-xl border border-zinc-200 bg-white/80 px-3.5 py-2.5 text-sm placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b97344]/40 resize-vertical"
               value={formValues.note || ""}
               onChange={(event) => setValue("note", event.target.value)}
               placeholder="What helped, what felt hard, anything you want to remember"
             />
           </label>
-          {errors.root?.message ? <div className={styles.alert}>{errors.root.message}</div> : null}
-          {saveError ? <div className={styles.alert}>{saveError}</div> : null}
-          {saveState ? <div className={styles.success}>{saveState}</div> : null}
-          <div className={styles.inlineActions}>
-            <button className={ui.primaryButton} type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : "Save today’s check-in"}
-            </button>
+          {errors.root?.message ? (
+            <div className="rounded-xl bg-red-50 border border-red-200 text-red-700 p-3 text-sm">
+              {errors.root.message}
+            </div>
+          ) : null}
+          {saveError ? (
+            <div className="rounded-xl bg-red-50 border border-red-200 text-red-700 p-3 text-sm">
+              {saveError}
+            </div>
+          ) : null}
+          {saveState ? (
+            <div className="rounded-xl bg-green-50 border border-green-200 text-green-700 p-3 text-sm">
+              {saveState}
+            </div>
+          ) : null}
+          <div className="flex flex-wrap gap-3">
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : "Save today's check-in"}
+            </Button>
           </div>
         </Card>
       </form>
 
       {(reflectionLoading || reflection) ? (
-        <div className={styles.grid}>
+        <div className="grid gap-4">
           <Card title="Your daily reflection" subtitle="A quick thought based on today's check-in.">
             {reflectionLoading && !reflection ? (
-              <p className={styles.smallNote}>Thinking...</p>
+              <p className="text-sm text-zinc-500 m-0">Thinking...</p>
             ) : (
-              <p>{reflection}</p>
+              <p className="m-0">{reflection}</p>
             )}
           </Card>
         </div>

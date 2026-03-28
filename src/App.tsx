@@ -5,7 +5,6 @@ import HistoryPage from "./pages/HistoryPage";
 import HomePage from "./pages/HomePage";
 import InsightsPage from "./pages/InsightsPage";
 import SettingsPage from "./pages/SettingsPage";
-import SummaryPage from "./pages/SummaryPage";
 import TodayPage from "./pages/TodayPage";
 import TriggersPage from "./pages/TriggersPage";
 
@@ -52,7 +51,6 @@ export default function App() {
           <Route path="history" element={<HistoryPage />} />
           <Route path="triggers" element={<TriggersPage />} />
           <Route path="insights" element={<InsightsPage />} />
-          <Route path="summary" element={<SummaryPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
