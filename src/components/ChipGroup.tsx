@@ -17,7 +17,7 @@ export default function ChipGroup({ items, selectedValues, onToggle }: ChipGroup
             type="button"
             onClick={() => onToggle(item)}
             className={cn(
-              "inline-flex items-center rounded-full px-3.5 py-2 text-sm font-medium border transition-all hover:-translate-y-px cursor-pointer",
+              "inline-flex items-center rounded-full px-3 py-1 text-sm font-medium border transition-all hover:-translate-y-px cursor-pointer",
               selected
                 ? "bg-gradient-to-br from-[#b97344] to-[#9b5f38] text-white border-transparent shadow-md"
                 : "bg-white/70 border-zinc-200 text-zinc-800",

@@ -26,6 +26,9 @@ function mapDailyCheckin(id, data) {
         sleepQuality: Number(data.sleepQuality ?? 3),
         symptoms: Array.isArray(data.symptoms) ? data.symptoms.map(String) : [],
         symptomNote: data.symptomNote ? String(data.symptomNote) : undefined,
+        bedTime: data.bedTime ? String(data.bedTime) : undefined,
+        wakeTime: data.wakeTime ? String(data.wakeTime) : undefined,
+        riseTime: data.riseTime ? String(data.riseTime) : undefined,
         note: data.note ? String(data.note) : undefined,
         medicationStatuses: Array.isArray(data.medicationStatuses)
             ? data.medicationStatuses.map((item) => ({

@@ -19,6 +19,16 @@ export function buildReflectionPrompt(checkin) {
     if (checkin.symptomNote) {
         parts.push(`Symptom note: ${checkin.symptomNote}`);
     }
+    if (checkin.bedTime || checkin.wakeTime || checkin.riseTime) {
+        const times = [];
+        if (checkin.bedTime)
+            times.push(`went to bed at ${checkin.bedTime}`);
+        if (checkin.wakeTime)
+            times.push(`woke up at ${checkin.wakeTime}`);
+        if (checkin.riseTime)
+            times.push(`got up at ${checkin.riseTime}`);
+        parts.push(`Sleep times: ${times.join(", ")}`);
+    }
     if (checkin.note) {
         parts.push(`Note: ${checkin.note}`);
     }

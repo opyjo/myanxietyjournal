@@ -43,6 +43,18 @@ export default function HistoryPage() {
     setExpandedDate(expandedDate === date ? null : date);
   }
 
+  function calcSleepDuration(bedTime: string, wakeTime: string): string {
+    const [bedH, bedM] = bedTime.split(":").map(Number);
+    const [wakeH, wakeM] = wakeTime.split(":").map(Number);
+    let bedMinutes = bedH * 60 + bedM;
+    let wakeMinutes = wakeH * 60 + wakeM;
+    if (wakeMinutes <= bedMinutes) wakeMinutes += 24 * 60; // crosses midnight
+    const total = wakeMinutes - bedMinutes;
+    const h = Math.floor(total / 60);
+    const m = total % 60;
+    return m > 0 ? `${h}h ${m}m` : `${h}h`;
+  }
+
   if (loading) {
     return (
       <div className="grid gap-5">
@@ -126,6 +138,35 @@ export default function HistoryPage() {
                         <p className="text-2xl font-bold m-0 mt-1">{entry.anxietyLevel}/10</p>
                       </div>
                     </div>
+
+                    {(entry.bedTime || entry.wakeTime || entry.riseTime) && (
+                      <div className="flex flex-wrap gap-3">
+                        {entry.bedTime && (
+                          <div className="rounded-xl border border-zinc-200 bg-white/80 px-3 py-2">
+                            <p className="text-xs text-zinc-500 m-0">Went to bed</p>
+                            <p className="text-sm font-semibold m-0">{entry.bedTime}</p>
+                          </div>
+                        )}
+                        {entry.wakeTime && (
+                          <div className="rounded-xl border border-zinc-200 bg-white/80 px-3 py-2">
+                            <p className="text-xs text-zinc-500 m-0">Woke up</p>
+                            <p className="text-sm font-semibold m-0">{entry.wakeTime}</p>
+                          </div>
+                        )}
+                        {entry.riseTime && (
+                          <div className="rounded-xl border border-zinc-200 bg-white/80 px-3 py-2">
+                            <p className="text-xs text-zinc-500 m-0">Got up</p>
+                            <p className="text-sm font-semibold m-0">{entry.riseTime}</p>
+                          </div>
+                        )}
+                        {entry.bedTime && entry.wakeTime && (
+                          <div className="rounded-xl border border-zinc-200 bg-amber-50 px-3 py-2">
+                            <p className="text-xs text-zinc-500 m-0">Sleep duration</p>
+                            <p className="text-sm font-semibold m-0">{calcSleepDuration(entry.bedTime, entry.wakeTime)}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {entry.symptomNote && (
                       <p className="text-sm text-zinc-500 m-0">{entry.symptomNote}</p>

@@ -123,16 +123,16 @@ export default function TodayPage() {
   }
 
   return (
-    <div className="grid gap-5">
-      <div className="grid gap-1.5 py-1">
+    <div className="grid gap-4">
+      <div className="grid gap-1 py-1">
         <p className="text-xs uppercase tracking-widest text-zinc-400">Today</p>
-        <h2 className="text-3xl font-bold tracking-tight m-0">A short check-in for right now</h2>
-        <p className="text-zinc-500 max-w-xl m-0">
+        <h2 className="text-2xl font-bold tracking-tight m-0">A short check-in for right now</h2>
+        <p className="text-zinc-500 max-w-xl m-0 text-sm">
           Keep it light. A few taps are enough. You can always add detail later.
         </p>
       </div>
 
-      <form className="grid gap-4" onSubmit={handleSubmit(onSubmit, onValidationError)}>
+      <form className="grid gap-3" onSubmit={handleSubmit(onSubmit, onValidationError)}>
         <Card title="How today feels" subtitle="Tap the number that fits best.">
           <ScaleInput
             label="Anxiety level"
@@ -142,7 +142,7 @@ export default function TodayPage() {
             value={formValues.anxietyLevel}
             onChange={(value) => setValue("anxietyLevel", value)}
           />
-          <div className="grid gap-2.5">
+          <div className="grid gap-1.5">
             <div className="flex justify-between items-center gap-4">
               <span className="text-sm font-semibold text-zinc-800">Mood</span>
             </div>
@@ -153,7 +153,7 @@ export default function TodayPage() {
                   type="button"
                   onClick={() => setValue("mood", option.value)}
                   className={cn(
-                    "inline-flex items-center rounded-full px-3.5 py-2 text-sm font-medium border transition-all hover:-translate-y-px cursor-pointer",
+                    "inline-flex items-center rounded-full px-3 py-1 text-sm font-medium border transition-all hover:-translate-y-px cursor-pointer",
                     formValues.mood === option.value
                       ? "bg-gradient-to-br from-[#b97344] to-[#9b5f38] text-white border-transparent shadow-md"
                       : "bg-white/70 border-zinc-200 text-zinc-800",
@@ -194,7 +194,7 @@ export default function TodayPage() {
             <label className="grid gap-1.5">
               <span className="text-sm font-medium text-zinc-700">Add another symptom</span>
               <input
-                className="flex w-full rounded-xl border border-zinc-200 bg-white/80 px-3.5 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b97344]/40"
+                className="flex w-full rounded-xl border border-zinc-200 bg-white/80 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b97344]/40"
                 value={customSymptom}
                 onChange={(event) => setCustomSymptom(event.target.value)}
                 placeholder="e.g. jaw tension"
@@ -218,7 +218,7 @@ export default function TodayPage() {
           <label className="grid gap-1.5">
             <span className="text-sm font-medium text-zinc-700">Physical symptom notes</span>
             <textarea
-              className="flex min-h-[8rem] w-full rounded-xl border border-zinc-200 bg-white/80 px-3.5 py-2.5 text-sm placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b97344]/40 resize-vertical"
+              className="flex min-h-[5rem] w-full rounded-xl border border-zinc-200 bg-white/80 px-3 py-2 text-sm placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b97344]/40 resize-vertical"
               value={formValues.symptomNote || ""}
               onChange={(event) => setValue("symptomNote", event.target.value)}
               placeholder="Anything specific about intensity, timing, or body sensations?"
@@ -236,11 +236,11 @@ export default function TodayPage() {
               them here.
             </p>
           ) : (
-            <div className="grid gap-3">
+            <div className="flex flex-wrap gap-3">
               {formValues.medicationStatuses.map((status, index) => (
                 <div
                   key={status.medicationId}
-                  className="grid gap-2 p-4 rounded-xl bg-white/60 border border-zinc-200"
+                  className="grid gap-2 p-3 rounded-xl bg-white/60 border border-zinc-200 flex-1 min-w-[220px]"
                 >
                   <div>
                     <strong>{status.name}</strong>
@@ -249,29 +249,26 @@ export default function TodayPage() {
                       {status.dosageLabel ? <span>{status.dosageLabel}</span> : null}
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <select
+                    value={formValues.medicationStatuses[index]?.status}
+                    onChange={(event) =>
+                      setValue(
+                        `medicationStatuses.${index}.status`,
+                        event.target.value as "taken" | "skipped" | "not_logged",
+                      )
+                    }
+                    className="w-full rounded-lg border border-zinc-200 bg-white/80 px-3 py-2 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-[#b97344]/40 cursor-pointer"
+                  >
                     {medicationStatusOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() =>
-                          setValue(`medicationStatuses.${index}.status`, option.value)
-                        }
-                        className={cn(
-                          "inline-flex items-center rounded-full px-3.5 py-2 text-sm font-medium border transition-all hover:-translate-y-px cursor-pointer",
-                          formValues.medicationStatuses[index]?.status === option.value
-                            ? "bg-gradient-to-br from-[#b97344] to-[#9b5f38] text-white border-transparent shadow-md"
-                            : "bg-white/70 border-zinc-200 text-zinc-800",
-                        )}
-                      >
+                      <option key={option.value} value={option.value}>
                         {option.label}
-                      </button>
+                      </option>
                     ))}
-                  </div>
+                  </select>
                   <label className="grid gap-1.5">
                     <span className="text-sm font-medium text-zinc-700">Optional note</span>
                     <input
-                      className="flex w-full rounded-xl border border-zinc-200 bg-white/80 px-3.5 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b97344]/40"
+                      className="flex w-full rounded-xl border border-zinc-200 bg-white/80 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b97344]/40"
                       value={formValues.medicationStatuses[index]?.note || ""}
                       onChange={(event) =>
                         setValue(`medicationStatuses.${index}.note`, event.target.value)
@@ -286,10 +283,42 @@ export default function TodayPage() {
         </Card>
 
         <Card title="Anything else" subtitle="Free text is optional.">
+          <div className="grid gap-1.5">
+            <span className="text-sm font-medium text-zinc-700">Sleep times</span>
+            <div className="flex flex-wrap gap-3">
+              <label className="grid gap-1">
+                <span className="text-xs text-zinc-500">Went to bed</span>
+                <input
+                  type="time"
+                  className="rounded-lg border border-zinc-200 bg-white/80 px-3 py-2 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-[#b97344]/40"
+                  value={formValues.bedTime || ""}
+                  onChange={(event) => setValue("bedTime", event.target.value)}
+                />
+              </label>
+              <label className="grid gap-1">
+                <span className="text-xs text-zinc-500">Woke up</span>
+                <input
+                  type="time"
+                  className="rounded-lg border border-zinc-200 bg-white/80 px-3 py-2 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-[#b97344]/40"
+                  value={formValues.wakeTime || ""}
+                  onChange={(event) => setValue("wakeTime", event.target.value)}
+                />
+              </label>
+              <label className="grid gap-1">
+                <span className="text-xs text-zinc-500">Got up from bed</span>
+                <input
+                  type="time"
+                  className="rounded-lg border border-zinc-200 bg-white/80 px-3 py-2 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-[#b97344]/40"
+                  value={formValues.riseTime || ""}
+                  onChange={(event) => setValue("riseTime", event.target.value)}
+                />
+              </label>
+            </div>
+          </div>
           <label className="grid gap-1.5">
             <span className="text-sm font-medium text-zinc-700">Notes</span>
             <textarea
-              className="flex min-h-[8rem] w-full rounded-xl border border-zinc-200 bg-white/80 px-3.5 py-2.5 text-sm placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b97344]/40 resize-vertical"
+              className="flex min-h-[5rem] w-full rounded-xl border border-zinc-200 bg-white/80 px-3 py-2 text-sm placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b97344]/40 resize-vertical"
               value={formValues.note || ""}
               onChange={(event) => setValue("note", event.target.value)}
               placeholder="What helped, what felt hard, anything you want to remember"
@@ -319,7 +348,7 @@ export default function TodayPage() {
       </form>
 
       {(reflectionLoading || reflection) ? (
-        <div className="grid gap-4">
+        <div className="grid gap-3">
           <Card title="Your daily reflection" subtitle="A quick thought based on today's check-in.">
             {reflectionLoading && !reflection ? (
               <p className="text-sm text-zinc-500 m-0">Thinking...</p>

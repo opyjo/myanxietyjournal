@@ -17,6 +17,9 @@ export const dailyCheckinSchema = z.object({
     sleepQuality: z.number().int().min(1).max(5),
     symptoms: z.array(z.string().trim().min(1)).max(12),
     symptomNote: z.string().trim().max(300).optional().or(z.literal("")),
+    bedTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
+    wakeTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
+    riseTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
     note: z.string().trim().max(600).optional().or(z.literal("")),
     medicationStatuses: z.array(medicationStatusSchema).max(30),
 });

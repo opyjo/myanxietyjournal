@@ -26,6 +26,9 @@ export function sanitizeSourceBundle(bundle: AnalysisSourceBundle) {
       sleepQuality: checkin.sleepQuality,
       symptoms: checkin.symptoms,
       symptomNote: checkin.symptomNote || undefined,
+      bedTime: checkin.bedTime || undefined,
+      wakeTime: checkin.wakeTime || undefined,
+      riseTime: checkin.riseTime || undefined,
       note: checkin.note || undefined,
       medicationStatuses: checkin.medicationStatuses.map((status) => ({
         name: status.name,

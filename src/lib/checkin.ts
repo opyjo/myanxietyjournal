@@ -32,6 +32,9 @@ export function buildDefaultCheckinForm(date: string, medications: MedicationIte
     sleepQuality: 3,
     symptoms: [] as string[],
     symptomNote: "",
+    bedTime: "",
+    wakeTime: "",
+    riseTime: "",
     note: "",
     medicationStatuses: buildMedicationSnapshot(medications),
   };

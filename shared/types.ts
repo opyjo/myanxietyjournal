@@ -37,6 +37,9 @@ export interface DailyCheckin {
   sleepQuality: number;
   symptoms: string[];
   symptomNote?: string;
+  bedTime?: string;
+  wakeTime?: string;
+  riseTime?: string;
   note?: string;
   medicationStatuses: MedicationStatus[];
   createdAt?: string;
