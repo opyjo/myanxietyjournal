@@ -6,7 +6,8 @@ import RangeSelector from "../components/RangeSelector";
 import { Button } from "../components/ui/button";
 import { useAuth } from "../hooks/useAuth";
 import { acceptAnalysisDisclosure, hasAcceptedAnalysisDisclosure } from "../lib/disclosure";
-import { callAnalyzePatterns, getRangeSnapshot } from "../lib/firestore";
+import { analyzePatterns } from "../lib/ai";
+import { getRangeSnapshot } from "../lib/firestore";
 
 function average(numbers: number[]) {
   if (!numbers.length) return "—";
@@ -84,7 +85,7 @@ export default function InsightsPage() {
         acceptAnalysisDisclosure(user.uid);
         setDisclosureAccepted(true);
       }
-      const analysis = await callAnalyzePatterns(rangeStart, rangeEnd);
+      const analysis = await analyzePatterns(user.uid, rangeStart, rangeEnd);
       setSnapshot((previous) =>
         previous
           ? { ...previous, latestAnalysis: analysis }

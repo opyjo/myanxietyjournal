@@ -16,8 +16,7 @@ import {
   where,
 } from "firebase/firestore";
 import type { Unsubscribe } from "firebase/firestore";
-import { httpsCallable } from "firebase/functions";
-import { db, functions } from "./firebase";
+import { db } from "./firebase";
 import {
   mapAnalysisRunDoc,
   mapDailyCheckinDoc,
@@ -70,6 +69,14 @@ export function watchMedications(
   return onSnapshot(medicationsRef, (snapshot) => {
     onChange(snapshot.docs.map(mapMedicationItemDoc));
   });
+}
+
+export async function getMedications(uid: string): Promise<MedicationItem[]> {
+  const database = requireDb();
+  const snapshot = await getDocs(
+    query(collection(database, "users", uid, "medications"), orderBy("name", "asc")),
+  );
+  return snapshot.docs.map(mapMedicationItemDoc);
 }
 
 export async function listRecentTriggerLogs(uid: string) {
@@ -250,30 +257,3 @@ export async function getRangeSnapshot(uid: string, rangeStart: string, rangeEnd
   return { checkins, triggers, latestAnalysis };
 }
 
-export async function callGenerateDailyReflection(date: string) {
-  if (!functions) {
-    throw new Error("Firebase is not configured.");
-  }
-
-  const callable = httpsCallable<
-    { date: string },
-    { text: string; cached: boolean }
-  >(functions, "generateDailyReflection");
-
-  const response = await callable({ date });
-  return response.data;
-}
-
-export async function callAnalyzePatterns(rangeStart: string, rangeEnd: string) {
-  if (!functions) {
-    throw new Error("Firebase is not configured.");
-  }
-
-  const callable = httpsCallable<
-    { rangeStart: string; rangeEnd: string },
-    AnalysisRun
-  >(functions, "analyzePatterns");
-
-  const response = await callable({ rangeStart, rangeEnd });
-  return response.data;
-}

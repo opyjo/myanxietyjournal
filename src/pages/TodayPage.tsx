@@ -16,7 +16,8 @@ import ScaleInput from "../components/ScaleInput";
 import { Button } from "../components/ui/button";
 import { useAuth } from "../hooks/useAuth";
 import { buildDefaultCheckinForm, buildMedicationSnapshot } from "../lib/checkin";
-import { callGenerateDailyReflection, saveDailyCheckin, watchDailyCheckin, watchMedications } from "../lib/firestore";
+import { generateDailyReflection } from "../lib/ai";
+import { saveDailyCheckin, watchDailyCheckin, watchMedications } from "../lib/firestore";
 import { cn } from "../lib/utils";
 
 type CheckinFormValues = z.infer<typeof dailyCheckinSchema>;
@@ -59,7 +60,7 @@ export default function TodayPage() {
     if (!user || !existingCheckin) return;
     let cancelled = false;
     setReflectionLoading(true);
-    callGenerateDailyReflection(today)
+    generateDailyReflection(user.uid, today)
       .then((result) => {
         if (!cancelled) setReflection(result.text);
       })
@@ -108,7 +109,7 @@ export default function TodayPage() {
       });
       setSaveState("Saved. You can come back and adjust this check-in any time today.");
       setReflectionLoading(true);
-      callGenerateDailyReflection(today)
+      generateDailyReflection(user.uid, today)
         .then((result) => setReflection(result.text))
         .catch(() => {})
         .finally(() => setReflectionLoading(false));
