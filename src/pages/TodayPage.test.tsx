@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import TodayPage from "./TodayPage";
 
@@ -42,7 +43,11 @@ describe("TodayPage", () => {
   });
 
   it("renders medication tracking controls for active items", async () => {
-    render(<TodayPage />);
+    render(
+      <MemoryRouter initialEntries={["/app/today"]}>
+        <TodayPage />
+      </MemoryRouter>,
+    );
 
     expect(await screen.findByText("Sertraline")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Taken" })).toBeInTheDocument();

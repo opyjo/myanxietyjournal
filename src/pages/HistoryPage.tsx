@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { moodOptions } from "../../shared/constants";
-import { buildPresetRange, formatFriendlyDate } from "../../shared/date";
+import { buildPresetRange, enumerateDateKeys, formatFriendlyDate, todayDateKey } from "../../shared/date";
 import type { DailyCheckin, TriggerLog } from "../../shared/types";
 import Card from "../components/Card";
 import { useAuth } from "../hooks/useAuth";
@@ -12,6 +13,18 @@ export default function HistoryPage() {
   const [triggers, setTriggers] = useState<TriggerLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedDate, setExpandedDate] = useState<string | null>(null);
+
+  const today = useMemo(() => todayDateKey(), []);
+
+  const allDates = useMemo(() => {
+    const { rangeStart, rangeEnd } = buildPresetRange(90);
+    return enumerateDateKeys(rangeStart, rangeEnd).reverse(); // newest first
+  }, []);
+
+  const checkinDateSet = useMemo(
+    () => new Set(checkins.map((c) => c.date)),
+    [checkins],
+  );
 
   useEffect(() => {
     if (!user) return;
@@ -77,11 +90,30 @@ export default function HistoryPage() {
         </p>
       </div>
 
-      {checkins.length === 0 ? (
+      {checkins.length === 0 && allDates.every((d) => d === today) ? (
         <p className="text-sm text-zinc-500">No check-ins found in the last 90 days.</p>
       ) : (
         <div className="grid gap-3">
-          {checkins.map((entry) => {
+          {allDates.map((dateKey) => {
+            if (!checkinDateSet.has(dateKey)) {
+              if (dateKey === today) return null;
+              return (
+                <div key={dateKey} className="flex justify-between items-center p-4 rounded-xl bg-white/40 border border-dashed border-zinc-200">
+                  <div>
+                    <p className="font-medium text-zinc-500 m-0">{formatFriendlyDate(dateKey)}</p>
+                    <p className="text-xs text-zinc-400 m-0">No check-in recorded</p>
+                  </div>
+                  <Link
+                    to={`/app/today?date=${dateKey}`}
+                    className="inline-flex items-center rounded-full border border-zinc-200 bg-white/60 px-4 py-2 text-sm text-zinc-600 hover:-translate-y-px transition-all"
+                  >
+                    Add check-in
+                  </Link>
+                </div>
+              );
+            }
+
+            const entry = checkins.find((c) => c.date === dateKey)!;
             const isExpanded = expandedDate === entry.date;
             const dayTriggers = triggersByDate[entry.date] ?? [];
 

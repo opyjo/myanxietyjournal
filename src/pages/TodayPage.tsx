@@ -1,13 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import {
   medicationStatusOptions,
   moodOptions,
   symptomOptions,
 } from "../../shared/constants";
-import { todayDateKey } from "../../shared/date";
+import { formatFriendlyDate, shiftDateKey, todayDateKey } from "../../shared/date";
 import { dailyCheckinSchema } from "../../shared/validation";
 import type { DailyCheckin, MedicationItem } from "../../shared/types";
 import Card from "../components/Card";
@@ -25,6 +26,21 @@ type CheckinFormValues = z.infer<typeof dailyCheckinSchema>;
 export default function TodayPage() {
   const { user } = useAuth();
   const today = useMemo(() => todayDateKey(), []);
+  const [searchParams] = useSearchParams();
+
+  const initialDate = useMemo(() => {
+    const param = searchParams.get("date");
+    if (!param) return today;
+    const minDate = shiftDateKey(today, -90);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(param) && param <= today && param >= minDate)
+      return param;
+    return today;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // read once on mount
+
+  const [selectedDate, setSelectedDate] = useState<string>(initialDate);
+  const isPastDate = selectedDate < today;
+
   const [medications, setMedications] = useState<MedicationItem[]>([]);
   const [existingCheckin, setExistingCheckin] = useState<DailyCheckin | null>(null);
   const [customSymptom, setCustomSymptom] = useState("");
@@ -48,16 +64,24 @@ export default function TodayPage() {
 
   useEffect(() => {
     if (!user) return;
+    setExistingCheckin(null);
     const unsubscribeMedications = watchMedications(user.uid, setMedications);
-    const unsubscribeCheckin = watchDailyCheckin(user.uid, today, setExistingCheckin);
+    const unsubscribeCheckin = watchDailyCheckin(user.uid, selectedDate, setExistingCheckin);
     return () => {
       unsubscribeMedications();
       unsubscribeCheckin();
     };
-  }, [today, user]);
+  }, [selectedDate, user]);
 
+  // Clear reflection when date changes
   useEffect(() => {
-    if (!user || !existingCheckin) return;
+    setReflection(null);
+    setReflectionLoading(false);
+  }, [selectedDate]);
+
+  // Only fetch reflection for today
+  useEffect(() => {
+    if (!user || !existingCheckin || selectedDate !== today) return;
     let cancelled = false;
     setReflectionLoading(true);
     generateDailyReflection(user.uid, today)
@@ -72,7 +96,7 @@ export default function TodayPage() {
       cancelled = true;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [existingCheckin?.updatedAt, today, user]);
+  }, [existingCheckin?.updatedAt, selectedDate, today, user]);
 
   useEffect(() => {
     const medicationStatuses = buildMedicationSnapshot(
@@ -83,8 +107,8 @@ export default function TodayPage() {
       reset({ ...existingCheckin, medicationStatuses });
       return;
     }
-    reset(buildDefaultCheckinForm(today, medications));
-  }, [existingCheckin, medications, reset, today]);
+    reset(buildDefaultCheckinForm(selectedDate, medications));
+  }, [existingCheckin, medications, reset, selectedDate]);
 
   function toggleSelection(list: string[], value: string) {
     return list.includes(value) ? list.filter((item) => item !== value) : [...list, value];
@@ -107,12 +131,18 @@ export default function TodayPage() {
         ...values,
         symptoms: [...new Set(values.symptoms)],
       });
-      setSaveState("Saved. You can come back and adjust this check-in any time today.");
-      setReflectionLoading(true);
-      generateDailyReflection(user.uid, today)
-        .then((result) => setReflection(result.text))
-        .catch(() => {})
-        .finally(() => setReflectionLoading(false));
+      setSaveState(
+        isPastDate
+          ? `Saved check-in for ${formatFriendlyDate(selectedDate)}.`
+          : "Saved. You can come back and adjust this check-in any time today.",
+      );
+      if (!isPastDate) {
+        setReflectionLoading(true);
+        generateDailyReflection(user.uid, today)
+          .then((result) => setReflection(result.text))
+          .catch(() => {})
+          .finally(() => setReflectionLoading(false));
+      }
     } catch (error) {
       console.error("Save check-in failed:", error);
       setSaveError(
@@ -126,12 +156,49 @@ export default function TodayPage() {
   return (
     <div className="grid gap-4">
       <div className="grid gap-1 py-1">
-        <p className="text-xs uppercase tracking-widest text-zinc-400">Today</p>
-        <h2 className="text-2xl font-bold tracking-tight m-0">A short check-in for right now</h2>
+        <p className="text-xs uppercase tracking-widest text-zinc-400">
+          {isPastDate ? "Past check-in" : "Today"}
+        </p>
+        <h2 className="text-2xl font-bold tracking-tight m-0">
+          {isPastDate ? `Check-in for ${formatFriendlyDate(selectedDate)}` : "A short check-in for right now"}
+        </h2>
         <p className="text-zinc-500 max-w-xl m-0 text-sm">
           Keep it light. A few taps are enough. You can always add detail later.
         </p>
+        <div className="flex items-center gap-3 flex-wrap mt-2">
+          <label className="grid gap-1">
+            <span className="text-xs text-zinc-500">Date</span>
+            <input
+              type="date"
+              className="rounded-lg border border-zinc-200 bg-white/80 px-3 py-2 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-[#b97344]/40"
+              value={selectedDate}
+              min={shiftDateKey(today, -90)}
+              max={today}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val && val <= today && val >= shiftDateKey(today, -90))
+                  setSelectedDate(val);
+              }}
+            />
+          </label>
+          {isPastDate && (
+            <button
+              type="button"
+              className="text-sm text-[#b97344] underline underline-offset-2"
+              onClick={() => setSelectedDate(today)}
+            >
+              Back to today
+            </button>
+          )}
+        </div>
       </div>
+
+      {isPastDate && (
+        <div className="rounded-xl bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm">
+          Filling in a check-in for <strong>{formatFriendlyDate(selectedDate)}</strong>.
+          This will be saved to that date in your history.
+        </div>
+      )}
 
       <form className="grid gap-3" onSubmit={handleSubmit(onSubmit, onValidationError)}>
         <Card title="How today feels" subtitle="Tap the number that fits best.">
@@ -342,7 +409,11 @@ export default function TodayPage() {
           ) : null}
           <div className="flex flex-wrap gap-3">
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : "Save today's check-in"}
+              {isSubmitting
+                ? "Saving..."
+                : isPastDate
+                  ? `Save check-in for ${formatFriendlyDate(selectedDate)}`
+                  : "Save today's check-in"}
             </Button>
           </div>
         </Card>
