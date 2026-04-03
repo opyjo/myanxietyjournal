@@ -120,17 +120,43 @@ export default function HistoryPage() {
             return (
               <div
                 key={entry.date}
-                className="grid gap-2 p-4 rounded-xl bg-white/60 border border-zinc-200 cursor-pointer hover:border-zinc-300 transition-colors"
+                className="grid gap-3 p-5 rounded-xl bg-white/60 border border-zinc-200 cursor-pointer hover:border-zinc-300 transition-colors"
                 onClick={() => handleExpand(entry.date)}
               >
-                {/* Collapsed view — always visible */}
-                <div>
-                  <strong>{formatFriendlyDate(entry.date)}</strong>
-                  <div className="flex flex-wrap gap-2 text-sm text-zinc-500 mt-0.5">
-                    <span>{moodLabel(entry.mood)}</span>
-                    <span>Anxiety {entry.anxietyLevel}/10</span>
+                {/* Summary header */}
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-zinc-800 m-0">{formatFriendlyDate(entry.date)}</p>
+                    <p className="text-sm text-zinc-500 m-0 mt-0.5">{moodLabel(entry.mood)}</p>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="text-right">
+                      <p className="text-xs text-zinc-400 m-0">Anxiety</p>
+                      <p className={`text-lg font-bold m-0 leading-none ${entry.anxietyLevel >= 7 ? "text-red-500" : entry.anxietyLevel >= 4 ? "text-amber-500" : "text-green-600"}`}>
+                        {entry.anxietyLevel}<span className="text-xs font-normal text-zinc-400">/10</span>
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-zinc-400 m-0">Energy</p>
+                      <p className="text-lg font-bold m-0 leading-none text-zinc-700">
+                        {entry.energy}<span className="text-xs font-normal text-zinc-400">/5</span>
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-zinc-400 m-0">Sleep</p>
+                      <p className="text-lg font-bold m-0 leading-none text-zinc-700">
+                        {entry.sleepQuality}<span className="text-xs font-normal text-zinc-400">/5</span>
+                      </p>
+                    </div>
                   </div>
                 </div>
+
+                {/* Sleep duration inline */}
+                {entry.bedTime && entry.wakeTime && (
+                  <p className="text-xs text-zinc-400 m-0">
+                    Slept {calcSleepDuration(entry.bedTime, entry.wakeTime)} &middot; bed {entry.bedTime}{entry.wakeTime ? ` · up ${entry.wakeTime}` : ""}
+                  </p>
+                )}
 
                 {entry.symptoms.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
@@ -142,61 +168,31 @@ export default function HistoryPage() {
                         {s}
                       </span>
                     ))}
+                    {dayTriggers.length > 0 && (
+                      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-zinc-100 text-zinc-600">
+                        {dayTriggers.length} trigger{dayTriggers.length > 1 ? "s" : ""}
+                      </span>
+                    )}
                   </div>
                 )}
 
                 {entry.note && (
-                  <p className="text-sm text-zinc-500 m-0">
+                  <p className="text-sm text-zinc-500 m-0 leading-relaxed">
                     {isExpanded
                       ? entry.note
-                      : entry.note.slice(0, 120) + (entry.note.length > 120 ? "..." : "")}
+                      : entry.note.slice(0, 160) + (entry.note.length > 160 ? "…" : "")}
                   </p>
                 )}
 
                 {/* Expanded view */}
                 {isExpanded && (
                   <>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4">
-                        <p className="text-xs text-zinc-500 m-0">Energy</p>
-                        <p className="text-2xl font-bold m-0 mt-1">{entry.energy}/5</p>
-                      </div>
-                      <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4">
-                        <p className="text-xs text-zinc-500 m-0">Sleep quality</p>
-                        <p className="text-2xl font-bold m-0 mt-1">{entry.sleepQuality}/5</p>
-                      </div>
-                      <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4">
-                        <p className="text-xs text-zinc-500 m-0">Anxiety</p>
-                        <p className="text-2xl font-bold m-0 mt-1">{entry.anxietyLevel}/10</p>
-                      </div>
-                    </div>
-
-                    {(entry.bedTime || entry.wakeTime || entry.riseTime) && (
+                    {entry.riseTime && (
                       <div className="flex flex-wrap gap-3">
-                        {entry.bedTime && (
-                          <div className="rounded-xl border border-zinc-200 bg-white/80 px-3 py-2">
-                            <p className="text-xs text-zinc-500 m-0">Went to bed</p>
-                            <p className="text-sm font-semibold m-0">{entry.bedTime}</p>
-                          </div>
-                        )}
-                        {entry.wakeTime && (
-                          <div className="rounded-xl border border-zinc-200 bg-white/80 px-3 py-2">
-                            <p className="text-xs text-zinc-500 m-0">Woke up</p>
-                            <p className="text-sm font-semibold m-0">{entry.wakeTime}</p>
-                          </div>
-                        )}
-                        {entry.riseTime && (
-                          <div className="rounded-xl border border-zinc-200 bg-white/80 px-3 py-2">
-                            <p className="text-xs text-zinc-500 m-0">Got up</p>
-                            <p className="text-sm font-semibold m-0">{entry.riseTime}</p>
-                          </div>
-                        )}
-                        {entry.bedTime && entry.wakeTime && (
-                          <div className="rounded-xl border border-zinc-200 bg-amber-50 px-3 py-2">
-                            <p className="text-xs text-zinc-500 m-0">Sleep duration</p>
-                            <p className="text-sm font-semibold m-0">{calcSleepDuration(entry.bedTime, entry.wakeTime)}</p>
-                          </div>
-                        )}
+                        <div className="rounded-xl border border-zinc-200 bg-white/80 px-3 py-2">
+                          <p className="text-xs text-zinc-500 m-0">Got up</p>
+                          <p className="text-sm font-semibold m-0">{entry.riseTime}</p>
+                        </div>
                       </div>
                     )}
 
