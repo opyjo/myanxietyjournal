@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { moodOptions } from "../../shared/constants";
-import { buildPresetRange, enumerateDateKeys, formatFriendlyDate, todayDateKey } from "../../shared/date";
+import { buildPresetRange, enumerateDateKeys, formatFriendlyDate, shiftDateKey, todayDateKey } from "../../shared/date";
 import type { DailyCheckin, TriggerLog } from "../../shared/types";
 import Card from "../components/Card";
 import { useAuth } from "../hooks/useAuth";
@@ -12,14 +12,15 @@ export default function HistoryPage() {
   const [checkins, setCheckins] = useState<DailyCheckin[]>([]);
   const [triggers, setTriggers] = useState<TriggerLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [expandedDate, setExpandedDate] = useState<string | null>(null);
 
   const today = useMemo(() => todayDateKey(), []);
 
   const allDates = useMemo(() => {
-    const { rangeStart, rangeEnd } = buildPresetRange(90);
-    return enumerateDateKeys(rangeStart, rangeEnd).reverse(); // newest first
-  }, []);
+    const rangeStart = shiftDateKey(today, -89);
+    return enumerateDateKeys(rangeStart, today).reverse(); // newest first
+  }, [today]);
 
   const checkinDateSet = useMemo(
     () => new Set(checkins.map((c) => c.date)),
@@ -36,8 +37,13 @@ export default function HistoryPage() {
       .then(([c, t]) => {
         setCheckins(c.reverse());
         setTriggers(t);
+        setLoading(false);
       })
-      .finally(() => setLoading(false));
+      .catch((err) => {
+        console.error("Failed to load history:", err);
+        setLoadError(err instanceof Error ? err.message : "Failed to load history. Please try again.");
+        setLoading(false);
+      });
   }, [user]);
 
   const triggersByDate = useMemo(() => {
@@ -80,6 +86,20 @@ export default function HistoryPage() {
     );
   }
 
+  if (loadError) {
+    return (
+      <div className="grid gap-5">
+        <div className="grid gap-1.5 py-1">
+          <p className="text-xs uppercase tracking-widest text-zinc-400">History</p>
+          <h2 className="text-3xl font-bold tracking-tight m-0">Past check-ins</h2>
+        </div>
+        <div className="rounded-xl bg-red-50 border border-red-200 text-red-700 p-4 text-sm">
+          {loadError}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-5">
       <div className="grid gap-1.5 py-1">
@@ -90,7 +110,7 @@ export default function HistoryPage() {
         </p>
       </div>
 
-      {checkins.length === 0 && allDates.every((d) => d === today) ? (
+      {checkins.length === 0 ? (
         <p className="text-sm text-zinc-500">No check-ins found in the last 90 days.</p>
       ) : (
         <div className="grid gap-3">
