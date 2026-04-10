@@ -24,10 +24,11 @@ export function buildPresetRange(days = DEFAULT_RANGE_PRESET) {
     };
 }
 export function diffDaysInclusive(rangeStart, rangeEnd) {
-    const start = fromDateKey(rangeStart);
-    const end = fromDateKey(rangeEnd);
-    const diff = end.getTime() - start.getTime();
-    return Math.floor(diff / 86_400_000) + 1;
+    const [sy, sm, sd] = rangeStart.split("-").map(Number);
+    const [ey, em, ed] = rangeEnd.split("-").map(Number);
+    const start = Date.UTC(sy, sm - 1, sd);
+    const end = Date.UTC(ey, em - 1, ed);
+    return Math.round((end - start) / 86_400_000) + 1;
 }
 export function clampRange(rangeStart, rangeEnd) {
     const days = diffDaysInclusive(rangeStart, rangeEnd);

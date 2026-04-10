@@ -35,6 +35,9 @@ export interface DailyCheckin {
   mood: Mood;
   energy: number;
   sleepQuality: number;
+  anxietyWaking?: number;
+  motivation?: number;
+  gratitude?: string;
   symptoms: string[];
   symptomNote?: string;
   bedTime?: string;

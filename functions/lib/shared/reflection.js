@@ -13,6 +13,15 @@ export function buildReflectionPrompt(checkin) {
         `Energy: ${checkin.energy}/5`,
         `Sleep quality: ${checkin.sleepQuality}/5`,
     ];
+    if (checkin.anxietyWaking != null) {
+        parts.push(`Anxiety upon waking: ${checkin.anxietyWaking}/10`);
+    }
+    if (checkin.motivation != null) {
+        parts.push(`Motivation: ${checkin.motivation}/5`);
+    }
+    if (checkin.gratitude) {
+        parts.push(`Grateful for: ${checkin.gratitude}`);
+    }
     if (checkin.symptoms.length > 0) {
         parts.push(`Symptoms: ${checkin.symptoms.join(", ")}`);
     }

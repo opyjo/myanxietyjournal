@@ -145,9 +145,18 @@ export default function HistoryPage() {
               >
                 {/* Summary header */}
                 <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-semibold text-zinc-800 m-0">{formatFriendlyDate(entry.date)}</p>
-                    <p className="text-sm text-zinc-500 m-0 mt-0.5">{moodLabel(entry.mood)}</p>
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <p className="font-semibold text-zinc-800 m-0">{formatFriendlyDate(entry.date)}</p>
+                      <p className="text-sm text-zinc-500 m-0 mt-0.5">{moodLabel(entry.mood)}</p>
+                    </div>
+                    <Link
+                      to={`/app/today?date=${entry.date}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center rounded-full bg-gradient-to-br from-[#b97344] to-[#9b5f38] px-3 py-1 text-xs font-semibold text-white shadow-sm hover:shadow-md hover:-translate-y-px transition-all"
+                    >
+                      Edit
+                    </Link>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <div className="text-right">
@@ -168,6 +177,22 @@ export default function HistoryPage() {
                         {entry.sleepQuality}<span className="text-xs font-normal text-zinc-400">/5</span>
                       </p>
                     </div>
+                    {entry.motivation != null && (
+                      <div className="text-right">
+                        <p className="text-xs text-zinc-400 m-0">Motivation</p>
+                        <p className="text-lg font-bold m-0 leading-none text-zinc-700">
+                          {entry.motivation}<span className="text-xs font-normal text-zinc-400">/5</span>
+                        </p>
+                      </div>
+                    )}
+                    {entry.anxietyWaking != null && (
+                      <div className="text-right">
+                        <p className="text-xs text-zinc-400 m-0">Waking</p>
+                        <p className={`text-lg font-bold m-0 leading-none ${entry.anxietyWaking >= 7 ? "text-red-500" : entry.anxietyWaking >= 4 ? "text-amber-500" : "text-green-600"}`}>
+                          {entry.anxietyWaking}<span className="text-xs font-normal text-zinc-400">/10</span>
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -207,6 +232,12 @@ export default function HistoryPage() {
                 {/* Expanded view */}
                 {isExpanded && (
                   <>
+                    {entry.gratitude && (
+                      <p className="text-sm text-zinc-600 m-0">
+                        <span className="font-medium">Grateful for:</span> {entry.gratitude}
+                      </p>
+                    )}
+
                     {entry.riseTime && (
                       <div className="flex flex-wrap gap-3">
                         <div className="rounded-xl border border-zinc-200 bg-white/80 px-3 py-2">

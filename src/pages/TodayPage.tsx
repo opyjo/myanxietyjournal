@@ -11,6 +11,8 @@ import {
 import { formatFriendlyDate, shiftDateKey, todayDateKey } from "../../shared/date";
 import { dailyCheckinSchema } from "../../shared/validation";
 import type { DailyCheckin, MedicationItem } from "../../shared/types";
+import { MessageCircle } from "lucide-react";
+import AiChat from "../components/AiChat";
 import Card from "../components/Card";
 import ChipGroup from "../components/ChipGroup";
 import ScaleInput from "../components/ScaleInput";
@@ -18,6 +20,7 @@ import { Button } from "../components/ui/button";
 import { useAuth } from "../hooks/useAuth";
 import { buildDefaultCheckinForm, buildMedicationSnapshot } from "../lib/checkin";
 import { generateDailyReflection } from "../lib/ai";
+import { getDailyVerse } from "../lib/dailyVerse";
 import { saveDailyCheckin, watchDailyCheckin, watchMedications } from "../lib/firestore";
 import { cn } from "../lib/utils";
 
@@ -48,6 +51,7 @@ export default function TodayPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [reflection, setReflection] = useState<string | null>(null);
   const [reflectionLoading, setReflectionLoading] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
 
   const {
     handleSubmit,
@@ -73,10 +77,11 @@ export default function TodayPage() {
     };
   }, [selectedDate, user]);
 
-  // Clear reflection when date changes
+  // Clear reflection and close chat when date changes
   useEffect(() => {
     setReflection(null);
     setReflectionLoading(false);
+    setChatOpen(false);
   }, [selectedDate]);
 
   // Only fetch reflection for today
@@ -155,6 +160,36 @@ export default function TodayPage() {
 
   return (
     <div className="grid gap-4">
+      {(() => {
+        const verse = getDailyVerse(selectedDate);
+        return (
+          <>
+            <div className="rounded-2xl bg-amber-50 border border-amber-200 p-5">
+              <p className="text-xs uppercase tracking-widest text-[#b97344] font-semibold mb-2">
+                Today's Verse
+              </p>
+              <p className="m-0 text-base italic leading-relaxed font-medium text-zinc-700">
+                "{verse.text}"
+              </p>
+              <p className="m-0 text-sm font-bold mt-3 text-[#b97344]">
+                — {verse.reference}
+              </p>
+              {!chatOpen && (
+                <button
+                  type="button"
+                  onClick={() => setChatOpen(true)}
+                  className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-[#b97344] hover:text-[#9b5f38] transition-colors cursor-pointer bg-transparent border-none p-0"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Ask AI
+                </button>
+              )}
+            </div>
+            {chatOpen && <AiChat verse={verse} onClose={() => setChatOpen(false)} />}
+          </>
+        );
+      })()}
+
       <div className="grid gap-1 py-1">
         <p className="text-xs uppercase tracking-widest text-zinc-400">
           {isPastDate ? "Past check-in" : "Today"}
@@ -248,6 +283,33 @@ export default function TodayPage() {
             value={formValues.sleepQuality}
             onChange={(value) => setValue("sleepQuality", value)}
           />
+          <ScaleInput
+            label="Anxiety upon waking"
+            helper="1 = calm, 10 = very anxious (optional)"
+            min={1}
+            max={10}
+            value={formValues.anxietyWaking ?? 0}
+            onChange={(value) => setValue("anxietyWaking", value === 0 ? undefined : value)}
+          />
+          <ScaleInput
+            label="Motivation"
+            helper="1 = none, 5 = high (optional)"
+            min={1}
+            max={5}
+            value={formValues.motivation ?? 0}
+            onChange={(value) => setValue("motivation", value === 0 ? undefined : value)}
+          />
+          <label className="grid gap-1.5">
+            <span className="text-sm font-semibold text-zinc-800">Gratitude</span>
+            <span className="text-xs text-zinc-500">One thing you're grateful for (optional)</span>
+            <input
+              className="flex w-full rounded-xl border border-zinc-200 bg-white/80 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b97344]/40"
+              value={formValues.gratitude || ""}
+              onChange={(event) => setValue("gratitude", event.target.value)}
+              placeholder="e.g. a good conversation with a friend"
+              maxLength={200}
+            />
+          </label>
         </Card>
 
         <Card title="Symptoms" subtitle="Choose anything that stood out.">
