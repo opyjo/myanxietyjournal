@@ -346,11 +346,25 @@ export default function TodayPage() {
             </div>
           </div>
           <label className="grid gap-1.5">
-            <span className="text-sm font-medium text-zinc-700">Physical symptom notes</span>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-zinc-700">Physical symptom notes</span>
+              <span
+                className={`text-xs ${
+                  (formValues.symptomNote?.length ?? 0) > 1500
+                    ? "text-red-600"
+                    : (formValues.symptomNote?.length ?? 0) > 1350
+                    ? "text-amber-600"
+                    : "text-zinc-400"
+                }`}
+              >
+                {formValues.symptomNote?.length ?? 0} / 1500
+              </span>
+            </div>
             <textarea
               className="flex min-h-[5rem] w-full rounded-xl border border-zinc-200 bg-white/80 px-3 py-2 text-sm placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b97344]/40 resize-vertical"
               value={formValues.symptomNote || ""}
               onChange={(event) => setValue("symptomNote", event.target.value)}
+              maxLength={1500}
               placeholder="Anything specific about intensity, timing, or body sensations?"
             />
           </label>
