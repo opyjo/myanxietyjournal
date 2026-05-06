@@ -56,6 +56,28 @@ export const medicationStatusOptions = [
     { value: "skipped", label: "Skipped" },
     { value: "not_logged", label: "Not logged" },
 ];
+export const urgeTriggerOptions = [
+    "Boredom",
+    "Stress",
+    "Loneliness",
+    "Late night",
+    "Social media",
+    "Fatigue",
+    "Idle time",
+    "Emotional pain",
+    "Celebration",
+    "No clear trigger",
+];
+export const urgeEmotionOptions = [
+    "Anxious",
+    "Lonely",
+    "Frustrated",
+    "Sad",
+    "Bored",
+    "Restless",
+    "Overwhelmed",
+    "Numb",
+];
 export const rangePresetOptions = [
     { days: 7, label: "7 days" },
     { days: 14, label: "14 days" },

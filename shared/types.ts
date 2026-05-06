@@ -111,6 +111,28 @@ export interface JournalSummary {
   text: string;
 }
 
+export interface HabitUrge {
+  id: string;
+  occurredAt: string;
+  occurredOn: string;
+  intensity: number;
+  triggerTags: string[];
+  emotionTags: string[];
+  actedOn: boolean;
+  copingStrategy?: string;
+  note?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface HabitStreak {
+  currentStreakStart: string;
+  lastRelapseDate?: string;
+  longestStreak: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface AnalysisSourceBundle {
   rangeStart: string;
   rangeEnd: string;

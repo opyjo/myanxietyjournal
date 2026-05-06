@@ -20,13 +20,17 @@ import { db } from "./firebase";
 import {
   mapAnalysisRunDoc,
   mapDailyCheckinDoc,
+  mapHabitStreakDoc,
+  mapHabitUrgeDoc,
   mapMedicationItemDoc,
   mapTriggerLogDoc,
 } from "./mappers";
-import { localDateTimeToIso, toDateKey } from "../../shared/date";
+import { diffDaysInclusive, localDateTimeToIso, toDateKey, todayDateKey } from "../../shared/date";
 import type {
   AnalysisRun,
   DailyCheckin,
+  HabitStreak,
+  HabitUrge,
   MedicationItem,
   TriggerLog,
 } from "../../shared/types";
@@ -255,5 +259,136 @@ export async function getRangeSnapshot(uid: string, rangeStart: string, rangeEnd
   ]);
 
   return { checkins, triggers, latestAnalysis };
+}
+
+// ── Habit Freedom Tracker ──────────────────────────────────────
+
+export async function getHabitStreak(uid: string): Promise<HabitStreak | null> {
+  const database = requireDb();
+  const snap = await getDoc(doc(database, "users", uid, "habitStreaks", "current"));
+  if (!snap.exists()) return null;
+  return mapHabitStreakDoc(snap.data() as Record<string, unknown>);
+}
+
+export async function saveHabitStreak(
+  uid: string,
+  payload: Omit<HabitStreak, "createdAt" | "updatedAt">,
+) {
+  const database = requireDb();
+  const ref = doc(database, "users", uid, "habitStreaks", "current");
+  const existing = await getDoc(ref);
+  await setDoc(ref, {
+    ...payload,
+    createdAt: existing.exists() ? existing.data().createdAt ?? serverTimestamp() : serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function listRecentHabitUrges(uid: string): Promise<HabitUrge[]> {
+  const database = requireDb();
+  const snapshot = await getDocs(
+    query(
+      collection(database, "users", uid, "habitUrges"),
+      orderBy("occurredAt", "desc"),
+      limit(20),
+    ),
+  );
+  return snapshot.docs.map(mapHabitUrgeDoc);
+}
+
+export async function saveHabitUrge(
+  uid: string,
+  payload: {
+    occurredAtInput: string;
+    intensity: number;
+    triggerTags: string[];
+    emotionTags: string[];
+    actedOn: boolean;
+    copingStrategy?: string;
+    note?: string;
+  },
+  urgeId?: string,
+) {
+  const database = requireDb();
+  const occurredAt = localDateTimeToIso(payload.occurredAtInput);
+  const occurredOn = toDateKey(new Date(payload.occurredAtInput));
+
+  const data = {
+    occurredAt,
+    occurredOn,
+    intensity: payload.intensity,
+    triggerTags: payload.triggerTags,
+    emotionTags: payload.emotionTags,
+    actedOn: payload.actedOn,
+    copingStrategy: payload.copingStrategy?.trim() || "",
+    note: payload.note?.trim() || "",
+    updatedAt: serverTimestamp(),
+  };
+
+  if (urgeId) {
+    const ref = doc(database, "users", uid, "habitUrges", urgeId);
+    const existing = await getDoc(ref);
+    await setDoc(ref, {
+      ...data,
+      createdAt: existing.exists() ? existing.data().createdAt ?? serverTimestamp() : serverTimestamp(),
+    }, { merge: true });
+  } else {
+    await addDoc(collection(database, "users", uid, "habitUrges"), {
+      ...data,
+      createdAt: serverTimestamp(),
+    });
+  }
+
+  // Update streak if relapse
+  if (payload.actedOn) {
+    const streak = await getHabitStreak(uid);
+    if (streak) {
+      const today = todayDateKey();
+      const currentDays = diffDaysInclusive(streak.currentStreakStart, today);
+      const newLongest = Math.max(streak.longestStreak, currentDays);
+      await saveHabitStreak(uid, {
+        currentStreakStart: today,
+        lastRelapseDate: occurredOn,
+        longestStreak: newLongest,
+      });
+    }
+  }
+}
+
+export async function deleteHabitUrge(uid: string, urgeId: string) {
+  const database = requireDb();
+
+  // Check if deleting a relapse — need to recalculate streak
+  const urgeSnap = await getDoc(doc(database, "users", uid, "habitUrges", urgeId));
+  const wasRelapse = urgeSnap.exists() && urgeSnap.data().actedOn === true;
+
+  await deleteDoc(doc(database, "users", uid, "habitUrges", urgeId));
+
+  if (wasRelapse) {
+    // Find most recent remaining relapse to recalculate streak start
+    const relapseSnap = await getDocs(
+      query(
+        collection(database, "users", uid, "habitUrges"),
+        where("actedOn", "==", true),
+        orderBy("occurredAt", "desc"),
+        limit(1),
+      ),
+    );
+
+    const streak = await getHabitStreak(uid);
+    if (!streak) return;
+
+    if (relapseSnap.empty) {
+      // No remaining relapses — restore original streak start (keep as is since we don't know original)
+      // Best we can do: keep currentStreakStart as-is if no relapses remain
+    } else {
+      const lastRelapse = mapHabitUrgeDoc(relapseSnap.docs[0]);
+      await saveHabitStreak(uid, {
+        currentStreakStart: lastRelapse.occurredOn,
+        lastRelapseDate: lastRelapse.occurredOn,
+        longestStreak: streak.longestStreak,
+      });
+    }
+  }
 }
 

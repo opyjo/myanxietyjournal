@@ -43,6 +43,16 @@ export const medicationItemSchema = z.object({
   active: z.boolean(),
 });
 
+export const habitUrgeSchema = z.object({
+  occurredAtInput: z.string().min(1),
+  intensity: z.number().int().min(1).max(10),
+  triggerTags: z.array(z.string().trim().min(1)).max(10),
+  emotionTags: z.array(z.string().trim().min(1)).max(8),
+  actedOn: z.boolean(),
+  copingStrategy: z.string().trim().max(300).optional().or(z.literal("")),
+  note: z.string().trim().max(600).optional().or(z.literal("")),
+});
+
 export const analysisRangeSchema = z
   .object({
     rangeStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),

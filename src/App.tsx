@@ -6,6 +6,7 @@ import HomePage from "./pages/HomePage";
 import InsightsPage from "./pages/InsightsPage";
 import SettingsPage from "./pages/SettingsPage";
 import TodayPage from "./pages/TodayPage";
+import HabitPage from "./pages/HabitPage";
 import TriggersPage from "./pages/TriggersPage";
 
 function ProtectedLayout() {
@@ -50,6 +51,7 @@ export default function App() {
           <Route path="today" element={<TodayPage />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="triggers" element={<TriggersPage />} />
+          <Route path="freedom" element={<HabitPage />} />
           <Route path="insights" element={<InsightsPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>

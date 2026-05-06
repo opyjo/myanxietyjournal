@@ -2,6 +2,8 @@ import type { DocumentData, QueryDocumentSnapshot, Timestamp } from "firebase/fi
 import type {
   AnalysisRun,
   DailyCheckin,
+  HabitStreak,
+  HabitUrge,
   MedicationItem,
   MedicationStatus,
   TriggerLog,
@@ -100,6 +102,33 @@ export function mapMedicationItemDoc(
     kind: data.kind === "supplement" ? "supplement" : "medication",
     dosageLabel: data.dosageLabel ? String(data.dosageLabel) : undefined,
     active: Boolean(data.active ?? true),
+    createdAt: toIsoString(data.createdAt),
+    updatedAt: toIsoString(data.updatedAt),
+  };
+}
+
+export function mapHabitUrgeDoc(snapshot: QueryDocumentSnapshot<DocumentData>): HabitUrge {
+  const data = snapshot.data();
+  return {
+    id: snapshot.id,
+    occurredAt: String(data.occurredAt ?? new Date().toISOString()),
+    occurredOn: String(data.occurredOn ?? ""),
+    intensity: Number(data.intensity ?? 5),
+    triggerTags: Array.isArray(data.triggerTags) ? data.triggerTags.map(String) : [],
+    emotionTags: Array.isArray(data.emotionTags) ? data.emotionTags.map(String) : [],
+    actedOn: Boolean(data.actedOn),
+    copingStrategy: data.copingStrategy ? String(data.copingStrategy) : undefined,
+    note: data.note ? String(data.note) : undefined,
+    createdAt: toIsoString(data.createdAt),
+    updatedAt: toIsoString(data.updatedAt),
+  };
+}
+
+export function mapHabitStreakDoc(data: Record<string, unknown>): HabitStreak {
+  return {
+    currentStreakStart: String(data.currentStreakStart ?? ""),
+    lastRelapseDate: data.lastRelapseDate ? String(data.lastRelapseDate) : undefined,
+    longestStreak: Number(data.longestStreak ?? 0),
     createdAt: toIsoString(data.createdAt),
     updatedAt: toIsoString(data.updatedAt),
   };
